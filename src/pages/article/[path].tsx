@@ -92,8 +92,6 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
 };
 
 const Article: React.FC<Props> = ({title, contents, mdContents}: Props) => {
-  console.log({contents});
-
   const options: Options = {
     renderNode: {
       [BLOCKS.PARAGRAPH]: (node, children) => {
