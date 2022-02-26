@@ -23,7 +23,6 @@ interface ArticleContainerProps {
 interface ArticleProps {
   title: string;
   contents: Document | null;
-  mdContents: contentful.EntryFields.Text | null;
 }
 
 type ContainerProps = ArticleContainerProps;
@@ -37,7 +36,6 @@ const ArticleContainer: React.FC<ContainerProps> = ({
     <Article
       title={article.fields.title}
       contents={article.fields.contents}
-      mdContents={article.fields.mdContents}
     />
   );
 };
@@ -91,7 +89,7 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
   };
 };
 
-const Article: React.FC<Props> = ({title, contents, mdContents}: Props) => {
+const Article: React.FC<Props> = ({title, contents}: Props) => {
   const options: Options = {
     renderNode: {
       [BLOCKS.PARAGRAPH]: (node, children) => {
@@ -109,15 +107,17 @@ const Article: React.FC<Props> = ({title, contents, mdContents}: Props) => {
   };
 
   return (
-    <div>
-      <h1>Tech Blog</h1>
-      <h2>{`title: ${title}`}</h2>
-      <div>
-        {contents !== null ?
+    <main>
+      <article className='w-[640px] mx-auto'>
+        {/* TODO Add blog title */}
+        <h1 className="text-4xl font-bold mt-16 mb-4">{title}</h1>
+        <div>
+          {contents !== null ?
           documentToReactComponents(contents, options) :
            null}
-      </div>
-    </div>
+        </div>
+      </article>
+    </main>
   );
 };
 
