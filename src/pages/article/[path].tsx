@@ -148,7 +148,7 @@ const Article: React.FC<Props> = ({path, title, contents}: Props) => {
       <Box
         component='article'
         sx={{
-          width: matches ? '640px' : '100%',
+          width: matches ? '640px' : 'auto',
           margin: matches ? '48px auto' : '48px 16px',
         }}
       >
