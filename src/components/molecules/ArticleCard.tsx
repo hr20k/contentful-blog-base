@@ -24,7 +24,6 @@ const Img = styled.img({
   objectFit: 'cover',
   borderTopLeftRadius: '4px',
   borderTopRightRadius: '4px',
-  borderRadius: '4px',
 });
 
 const ArticleCard: React.FC<Props> = ({
@@ -49,7 +48,6 @@ const ArticleCard: React.FC<Props> = ({
             sx={{
               display: 'flex',
               flexDirection: 'column',
-            // height: matches ? '480px' : 'calc((100vw - 32px) * (480 / 640))',
             }}
           >
             <Box>

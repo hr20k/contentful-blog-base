@@ -5,6 +5,7 @@ import {
   Options,
 } from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document} from '@contentful/rich-text-types';
+import styled from '@emotion/styled';
 import {Box, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
 import {GetStaticPaths, GetStaticProps} from 'next';
@@ -28,6 +29,7 @@ interface ArticleContainerProps {
 interface ArticleProps {
   path: string;
   title: string;
+  imageSrc?: string;
   contents: Document | null;
 }
 
@@ -43,6 +45,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
     <Article
       path={path}
       title={article.fields.title}
+      imageSrc={article.fields.thumbnail?.fields.file?.url}
       contents={article.fields.contents}
     />
   );
@@ -97,8 +100,19 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
   };
 };
 
-const Article: React.FC<Props> = ({path, title, contents}: Props) => {
+const Article: React.FC<Props> = ({
+  path,
+  title,
+  imageSrc,
+  contents,
+}: Props) => {
   const matches = useMediaQuery(theme.breakpoints.up('sm'));
+
+  const Img = styled.img({
+    marginTop: '48px',
+    objectFit: 'cover',
+    borderRadius: '4px',
+  });
 
   const options: Options = {
     renderNode: {
@@ -149,10 +163,29 @@ const Article: React.FC<Props> = ({path, title, contents}: Props) => {
         component='article'
         sx={{
           width: matches ? '640px' : 'auto',
-          margin: matches ? '48px auto' : '48px 16px',
+          margin: matches ? '0 auto 48px' : '0 16px 48px',
         }}
       >
-        <Typography variant='h1'>
+        {typeof imageSrc !== 'undefined' ? (
+          <Box>
+            <Img
+              src={imageSrc}
+              alt='thumbnail'
+              width="100%"
+              height={
+                matches ? '320px' : 'calc((100vw - 32px) * (320 / 640))'
+              }
+              loading='lazy'
+            />
+          </Box>
+         ) : null}
+        <Typography
+          variant='h1'
+          sx={{
+            marginTop: '48px',
+            marginBottom: '8px',
+          }}
+        >
           {title}
         </Typography>
         <div>
