@@ -25,7 +25,7 @@ const ArticleCard: React.FC<Props> = ({
   contents,
 }) => {
   return (
-    <Link href={href}>
+    <Link href={href} passHref>
       <MuiLink
         underline="none"
         sx={{

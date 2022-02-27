@@ -115,6 +115,7 @@ const Home: React.FC<Props> = ({links}) => {
               }}
             >
               <ArticleCard
+                key={href}
                 href={href}
                 title={title}
                 imageSrc={imageSrc}
