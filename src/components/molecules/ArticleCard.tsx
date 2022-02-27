@@ -43,6 +43,7 @@ const ArticleCard: React.FC<Props> = ({
             <Box>
               <Img
                 src={imageSrc ?? '/images/home.png'}
+                alt="article-image"
                 width="100%"
                 height="320px"
                 loading='lazy'

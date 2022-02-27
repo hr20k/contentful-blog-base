@@ -12,10 +12,12 @@ import {
   HatenaIcon,
 } from 'react-share';
 
+import {siteTitle, siteUrl} from '@/constants';
+
 
 const Share: React.FC = () => {
-  const url = 'https://tech-blog-inky.vercel.app/';
-  const title = 'Tech Blog';
+  const url = siteUrl;
+  const title = siteTitle;
 
   const ShareButton = styled(Box)({
     marginLeft: '1rem',

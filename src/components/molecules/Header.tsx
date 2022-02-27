@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import * as React from 'react';
 
+import {siteUrl} from '@/constants';
+
 const Header: React.FC = () => {
   const HeaderBar = styled.header({
     display: 'flex',
@@ -18,7 +20,7 @@ const Header: React.FC = () => {
   return (
     <HeaderBar>
       <Logo
-        href='/'
+        href={siteUrl}
       >
         <a>
           <Image
