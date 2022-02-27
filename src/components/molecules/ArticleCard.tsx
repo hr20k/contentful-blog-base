@@ -1,7 +1,15 @@
 import styled from '@emotion/styled';
-import {Box, Paper, Typography, Link as MuiLink} from '@mui/material';
+import {
+  Box,
+  Paper,
+  Typography,
+  Link as MuiLink,
+  useMediaQuery,
+} from '@mui/material';
 import Link from 'next/link';
 import * as React from 'react';
+
+import {theme} from '@/styles/theme/theme';
 
 interface ArticleCardProps {
   href: string;
@@ -24,6 +32,8 @@ const ArticleCard: React.FC<Props> = ({
   title,
   contents,
 }) => {
+  const matches = useMediaQuery(theme.breakpoints.up('sm'));
+
   return (
     <Link href={href} passHref>
       <MuiLink
@@ -37,7 +47,7 @@ const ArticleCard: React.FC<Props> = ({
             sx={{
               display: 'flex',
               flexDirection: 'column',
-              height: '480px',
+              height: matches ? '480px' : 'calc((100vw - 16px) * (480 / 640))',
             }}
           >
             <Box>
@@ -45,7 +55,7 @@ const ArticleCard: React.FC<Props> = ({
                 src={imageSrc ?? '/images/home.png'}
                 alt="article-image"
                 width="100%"
-                height="320px"
+                height={matches ? '320px' : 'calc(100vw * (320 / 640))'}
                 loading='lazy'
               />
             </Box>

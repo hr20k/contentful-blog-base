@@ -5,7 +5,7 @@ import {
   Options,
 } from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document} from '@contentful/rich-text-types';
-import {Box, Typography} from '@mui/material';
+import {Box, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import * as React from 'react';
@@ -13,6 +13,7 @@ import * as React from 'react';
 import {TechBlogModel} from '@/api/contentful/models/techBlog';
 import {Header} from '@/components/molecules/Header';
 import {Share} from '@/components/molecules/Share';
+import {theme} from '@/styles/theme/theme';
 
 
 interface Params extends ParsedUrlQuery {
@@ -97,6 +98,8 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
 };
 
 const Article: React.FC<Props> = ({path, title, contents}: Props) => {
+  const matches = useMediaQuery(theme.breakpoints.up('sm'));
+
   const options: Options = {
     renderNode: {
       [BLOCKS.PARAGRAPH]: (node, children) => {
@@ -145,8 +148,8 @@ const Article: React.FC<Props> = ({path, title, contents}: Props) => {
       <Box
         component='article'
         sx={{
-          width: '640px',
-          margin: '48px auto',
+          width: matches ? '640px' : '100%',
+          margin: matches ? '48px auto' : '48px 16px',
         }}
       >
         <Typography variant='h1'>

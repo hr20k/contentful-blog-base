@@ -1,11 +1,12 @@
 import {Block, Document, Inline} from '@contentful/rich-text-types';
-import {Box} from '@mui/material';
+import {Box, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {GetStaticProps} from 'next';
 import Head from 'next/head';
 import * as React from 'react';
 
 import {TechBlogModel} from '@/api/contentful/models/techBlog';
+import {theme} from '@/styles/theme/theme';
 
 import {ArticleCard} from '../components/molecules/ArticleCard';
 import {Header} from '../components/molecules/Header';
@@ -87,6 +88,8 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
 };
 
 const Home: React.FC<Props> = ({links}) => {
+  const matches = useMediaQuery(theme.breakpoints.up('sm'));
+
   return (
     <div>
       <Head>
@@ -100,8 +103,8 @@ const Home: React.FC<Props> = ({links}) => {
         <Header />
         <Box
           sx={{
-            width: '640px',
-            margin: '48px auto',
+            width: matches ? '640px' : '100%',
+            margin: matches ? '48px auto' : '48px 8px',
           }}
         >
           {links.map(({href, title, imageSrc, contents}) => (
