@@ -1,4 +1,3 @@
-import {log} from 'console';
 import {ParsedUrlQuery} from 'querystring';
 
 import {
@@ -12,9 +11,8 @@ import {GetStaticPaths, GetStaticProps} from 'next';
 import * as React from 'react';
 
 import {TechBlogModel} from '@/api/contentful/models/techBlog';
-
-import {Header} from '../../components/molecules/Header';
-import {Share} from '../../components/molecules/Share';
+import {Header} from '@/components/molecules/Header';
+import {Share} from '@/components/molecules/Share';
 
 
 interface Params extends ParsedUrlQuery {

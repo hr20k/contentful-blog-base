@@ -1,5 +1,5 @@
 import {Block, Document, Inline} from '@contentful/rich-text-types';
-import {Box, Typography} from '@mui/material';
+import {Box} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {GetStaticProps} from 'next';
 import Head from 'next/head';
@@ -31,8 +31,6 @@ type Props = HomeProps;
 const HomeContainer: React.FC<ContainerProps> = ({
   articles,
 }) => {
-  console.log({articles});
-
   const getValue = (content: Block | Inline): string => {
     return content.content.map((c) => {
       if (c.nodeType === 'text') {
@@ -59,8 +57,6 @@ const HomeContainer: React.FC<ContainerProps> = ({
   const links = React.useMemo(() => articles.map(({
     fields: {title, slug, thumbnail, contents},
   }) => {
-    console.log({thumbnail});
-
     return {
       href: `/article/${slug}`,
       imageSrc: thumbnail?.fields.file.url,
@@ -96,6 +92,7 @@ const Home: React.FC<Props> = ({links}) => {
       <Head>
         <title>Tech Blog</title>
         <meta name="description" content="フロントエンドの技術的なことを書くブログです" />
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -112,7 +109,7 @@ const Home: React.FC<Props> = ({links}) => {
               key={href}
               sx={{
                 marginTop: '16px',
-                ['&:first-child']: {
+                ['&:first-of-type']: {
                   marginTop: '0',
                 },
               }}

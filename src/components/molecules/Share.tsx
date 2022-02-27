@@ -14,12 +14,12 @@ import {
 
 
 const Share: React.FC = () => {
-  const url = 'https://nextjs-blog.netlify.com';
+  const url = 'https://tech-blog-inky.vercel.app/';
   const title = 'Tech Blog';
 
   const ShareButton = styled(Box)({
     marginLeft: '1rem',
-    ['&:first-child']: {
+    ['&:first-of-type']: {
       marginLeft: 0,
     },
   });

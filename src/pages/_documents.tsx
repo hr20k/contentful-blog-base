@@ -1,4 +1,4 @@
-import createEmotionServer from '@emotion/server/types/create-instance';
+import createEmotionServer from '@emotion/server/create-instance';
 import {RenderPageResult} from 'next/dist/shared/lib/utils';
 import Document, {
   DocumentContext,
@@ -8,6 +8,8 @@ import Document, {
   NextScript,
 } from 'next/document';
 import * as React from 'react';
+
+import {theme} from '@/styles/theme/theme';
 
 import {createEmotionCache} from '../createEmotionCache';
 
@@ -71,6 +73,8 @@ class MyDocument extends Document {
     return (
       <Html>
         <Head>
+          {/* PWA primary color */}
+          <meta name="theme-color" content={theme.palette.primary.main} />
           <link
             href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:300,400,500,700&display=swap"
             rel="stylesheet"
@@ -83,7 +87,6 @@ class MyDocument extends Document {
             rel="stylesheet"
             href="https://fonts.googleapis.com/icon?family=Material+Icons"
           />
-          <meta name="viewport" content="initial-scale=1, width=device-width" />
         </Head>
         <body>
           <Main />
