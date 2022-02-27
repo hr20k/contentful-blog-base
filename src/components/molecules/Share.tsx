@@ -14,10 +14,21 @@ import {
 
 import {siteTitle, siteUrl} from '@/constants';
 
+interface ShareProps {
+  path?: string;
+  title?: string;
+}
 
-const Share: React.FC = () => {
-  const url = siteUrl;
-  const title = siteTitle;
+type Props = ShareProps;
+
+const Share: React.FC<Props> = ({
+  path = '/',
+  title,
+}) => {
+  const url = `${siteUrl}${path}`;
+  const displayTitle = typeof title !== 'undefined' ?
+    `${siteTitle} | ${title}` :
+    siteTitle;
 
   const ShareButton = styled(Box)({
     marginLeft: '1rem',
@@ -38,7 +49,7 @@ const Share: React.FC = () => {
       <ShareButton>
         <TwitterShareButton
           url={url}
-          title={title}
+          title={displayTitle}
         >
           <TwitterIcon size={30} round={true} />
         </TwitterShareButton>
@@ -47,7 +58,7 @@ const Share: React.FC = () => {
       <ShareButton>
         <FacebookShareButton
           url={url}
-          title={title}
+          title={displayTitle}
         >
           <FacebookIcon size={30} round={true} />
         </FacebookShareButton>
@@ -56,7 +67,7 @@ const Share: React.FC = () => {
       <ShareButton>
         <LineShareButton
           url={url}
-          title={title}
+          title={displayTitle}
         >
           <LineIcon size={30} round={true} />
         </LineShareButton>
@@ -65,7 +76,7 @@ const Share: React.FC = () => {
       <ShareButton>
         <HatenaShareButton
           url={url}
-          title={title}
+          title={displayTitle}
         >
           <HatenaIcon size={30} round={true} />
         </HatenaShareButton>

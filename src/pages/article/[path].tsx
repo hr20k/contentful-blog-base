@@ -25,6 +25,7 @@ interface ArticleContainerProps {
 }
 
 interface ArticleProps {
+  path: string;
   title: string;
   contents: Document | null;
 }
@@ -34,10 +35,12 @@ type ContainerProps = ArticleContainerProps;
 type Props = ArticleProps;
 
 const ArticleContainer: React.FC<ContainerProps> = ({
+  path,
   article,
 }: ContainerProps) => {
   return (
     <Article
+      path={path}
       title={article.fields.title}
       contents={article.fields.contents}
     />
@@ -93,7 +96,7 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
   };
 };
 
-const Article: React.FC<Props> = ({title, contents}: Props) => {
+const Article: React.FC<Props> = ({path, title, contents}: Props) => {
   const options: Options = {
     renderNode: {
       [BLOCKS.PARAGRAPH]: (node, children) => {
@@ -154,7 +157,7 @@ const Article: React.FC<Props> = ({title, contents}: Props) => {
           documentToReactComponents(contents, options) :
            null}
         </div>
-        <Share />
+        <Share path={path} title={title}/>
       </Box>
     </main>
   );
