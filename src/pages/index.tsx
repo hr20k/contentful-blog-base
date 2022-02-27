@@ -103,8 +103,8 @@ const Home: React.FC<Props> = ({links}) => {
         <Header />
         <Box
           sx={{
-            width: matches ? '640px' : '100%',
-            margin: matches ? '48px auto' : '48px 8px',
+            width: matches ? '640px' : 'auto',
+            margin: matches ? '48px auto' : '48px 16px',
           }}
         >
           {links.map(({href, title, imageSrc, contents}) => (
