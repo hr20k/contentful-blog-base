@@ -1,10 +1,31 @@
+import {CacheProvider, EmotionCache} from '@emotion/react';
+import {CssBaseline, ThemeProvider} from '@mui/material';
 import * as React from 'react';
 
-import type {AppProps} from 'next/app';
-import '../styles/globals.css';
+import {createEmotionCache} from '../createEmotionCache';
+import {theme} from '../styles/theme/theme';
 
-const App: React.FC<AppProps> = ({Component, pageProps}: AppProps) => {
-  return <Component {...pageProps} />;
+import type {AppProps} from 'next/app';
+
+const clientSideEmotionCache = createEmotionCache();
+
+interface MyAppProps extends AppProps {
+  emotionCache?: EmotionCache;
+}
+
+const App: React.FC<MyAppProps> = ({
+  Component,
+  emotionCache = clientSideEmotionCache,
+  pageProps,
+}) => {
+  return (
+    <CacheProvider value={emotionCache}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Component {...pageProps} />
+      </ThemeProvider>
+    </CacheProvider>
+  );
 };
 
 export default App;

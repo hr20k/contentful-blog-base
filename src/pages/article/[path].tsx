@@ -1,3 +1,4 @@
+import {log} from 'console';
 import {ParsedUrlQuery} from 'querystring';
 
 import {
@@ -5,11 +6,16 @@ import {
   Options,
 } from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document} from '@contentful/rich-text-types';
+import {Box, Typography} from '@mui/material';
 import * as contentful from 'contentful';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import * as React from 'react';
 
 import {TechBlogModel} from '@/api/contentful/models/techBlog';
+
+import {Header} from '../../components/molecules/Header';
+import {Share} from '../../components/molecules/Share';
+
 
 interface Params extends ParsedUrlQuery {
   path: string;
@@ -103,20 +109,55 @@ const Article: React.FC<Props> = ({title, contents}: Props) => {
         }
         return <p>{children}</p>;
       },
+      [BLOCKS.EMBEDDED_ASSET]: (node) => {
+        return (
+          <Box
+            sx={{
+              margin: '16px 0',
+            }}
+          >
+            <img
+              src={node.data.target.fields.file.url}
+              width="100%"
+              object-fit="cover"
+              alt={node.data.target.fields.title}
+              loading='lazy'
+            />
+            {'fields' in node.data.target &&
+              'description' in node.data.target.fields &&
+              node.data.target.fields.description !== '' ? (
+              <Typography
+                variant="caption"
+              >
+                {node.data.target.fields.description}
+              </Typography>
+            ): null}
+          </Box>
+        );
+      },
     },
   };
 
   return (
     <main>
-      <article className='w-[640px] mx-auto'>
-        {/* TODO Add blog title */}
-        <h1 className="text-4xl font-bold mt-16 mb-4">{title}</h1>
+      <Header />
+      <Box
+        component='article'
+        sx={{
+          width: '640px',
+          margin: '48px auto',
+        }}
+      >
+        <Typography variant='h1'>
+          {title}
+        </Typography>
         <div>
           {contents !== null ?
           documentToReactComponents(contents, options) :
            null}
         </div>
-      </article>
+        <Share />
+      </Box>
     </main>
   );
 };

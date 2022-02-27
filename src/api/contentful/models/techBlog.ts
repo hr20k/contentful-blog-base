@@ -1,9 +1,10 @@
 import {Document} from '@contentful/rich-text-types';
-import {EntryFields} from 'contentful';
+import {Asset, EntryFields} from 'contentful';
 
 interface TechBlogModel {
-  title: EntryFields.Text;
   slug: EntryFields.Text;
+  title: EntryFields.Text;
+  thumbnail: Asset | null;
   contents: Document | null;
 }
 
