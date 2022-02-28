@@ -3,6 +3,7 @@ import {ParsedUrlQuery} from 'querystring';
 import {Block, Document, Inline} from '@contentful/rich-text-types';
 import {Box, Typography, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
+import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import Head from 'next/head';
 import * as React from 'react';
@@ -31,6 +32,7 @@ interface CategoryProps {
     href: string;
     imageSrc?: string;
     title: string;
+    date: string;
     contents: string;
   }>;
 }
@@ -68,11 +70,13 @@ const CategoryContainer: React.FC<ContainerProps> = ({
 
   const links = React.useMemo(() => articles.map(({
     fields: {title, slug, thumbnail, contents},
+    sys: {createdAt},
   }) => {
     return {
       href: `/${category.fields.slug}/${slug}`,
       imageSrc: thumbnail?.fields.file.url,
       title,
+      date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
       contents: createContentsStr(contents),
     };
   }), [articles]);
@@ -180,16 +184,27 @@ const Category: React.FC<Props> = ({categoryTitle, breadCrumbs, links}) => {
         <Box
           sx={{
             width: matches ? '640px' : 'auto',
-            margin: matches ? '48px auto' : '48px 16px',
+            margin: matches ? '0 auto 48px' : '0 16px 48px',
           }}
         >
-          <BreadCrumbs breadCrumbs={breadCrumbs}/>
+          <Box
+            sx={{
+              marginTop: '48px',
+              marginBottom: '8px',
+            }}
+          >
+
+            <BreadCrumbs breadCrumbs={breadCrumbs}/>
+          </Box>
           <Typography
             variant='h1'
+            sx={{
+              margin: '8px 0',
+            }}
           >
             {categoryTitle}
           </Typography>
-          {links.map(({href, title, imageSrc, contents}) => (
+          {links.map(({href, title, date, imageSrc, contents}) => (
             <Box
               key={href}
               sx={{
@@ -203,6 +218,7 @@ const Category: React.FC<Props> = ({categoryTitle, breadCrumbs, links}) => {
                 key={href}
                 href={href}
                 title={title}
+                date={date}
                 imageSrc={imageSrc}
                 contents={contents}
               />

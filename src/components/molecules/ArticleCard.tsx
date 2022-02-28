@@ -15,6 +15,7 @@ interface ArticleCardProps {
   href: string;
   imageSrc?: string;
   title: string;
+  date: string;
   contents: string;
 }
 
@@ -30,6 +31,7 @@ const ArticleCard: React.FC<Props> = ({
   href,
   imageSrc,
   title,
+  date,
   contents,
 }) => {
   const matches = useMediaQuery(theme.breakpoints.up('sm'));
@@ -84,6 +86,14 @@ const ArticleCard: React.FC<Props> = ({
                 }}
               >
                 {contents}
+              </Typography>
+              <Typography
+                variant='caption'
+                sx={{
+                  marginTop: '8px',
+                }}
+              >
+                {date}
               </Typography>
             </Box>
           </Box>

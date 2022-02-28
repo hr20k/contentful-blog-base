@@ -1,6 +1,7 @@
 import {Block, Document, Inline} from '@contentful/rich-text-types';
 import {Box, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
+import {format} from 'date-fns';
 import {GetStaticProps} from 'next';
 import Head from 'next/head';
 import * as React from 'react';
@@ -21,6 +22,7 @@ interface HomeProps {
     href: string;
     imageSrc?: string;
     title: string;
+    date: string;
     contents: string;
   }>;
 }
@@ -57,11 +59,13 @@ const HomeContainer: React.FC<ContainerProps> = ({
 
   const links = React.useMemo(() => articles.map(({
     fields: {title, slug, thumbnail, category, contents},
+    sys: {createdAt},
   }) => {
     return {
       href: `/${category.fields.slug}/${slug}`,
       imageSrc: thumbnail?.fields.file.url,
       title,
+      date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
       contents: createContentsStr(contents),
     };
   }), [articles]);
@@ -106,7 +110,7 @@ const Home: React.FC<Props> = ({links}) => {
             margin: matches ? '48px auto' : '48px 16px',
           }}
         >
-          {links.map(({href, title, imageSrc, contents}) => (
+          {links.map(({href, title, date, imageSrc, contents}) => (
             <Box
               key={href}
               sx={{
@@ -120,6 +124,7 @@ const Home: React.FC<Props> = ({links}) => {
                 key={href}
                 href={href}
                 title={title}
+                date={date}
                 imageSrc={imageSrc}
                 contents={contents}
               />

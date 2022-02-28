@@ -1,5 +1,6 @@
 import {ParsedUrlQuery} from 'querystring';
 
+
 import {
   documentToReactComponents,
   Options,
@@ -8,6 +9,7 @@ import {BLOCKS, Document} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
 import {Box, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
+import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import * as React from 'react';
 
@@ -34,6 +36,7 @@ interface ArticleContainerProps {
 interface ArticleProps {
   path: string;
   title: string;
+  date: string;
   breadCrumbs: Array<BreadCrumbsModel>;
   imageSrc?: string;
   contents: Document | null;
@@ -68,8 +71,9 @@ const ArticleContainer: React.FC<ContainerProps> = ({
   return (
     <Article
       path={path}
-      breadCrumbs={breadCrumbs}
       title={article.fields.title}
+      date={`${format(new Date(article.sys.createdAt), 'yyyy年MM月dd日 HH:mm')}`}
+      breadCrumbs={breadCrumbs}
       imageSrc={article.fields.thumbnail?.fields.file?.url}
       contents={article.fields.contents}
     />
@@ -141,6 +145,7 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
 const Article: React.FC<Props> = ({
   path,
   title,
+  date,
   breadCrumbs,
   imageSrc,
   contents,
@@ -233,6 +238,11 @@ const Article: React.FC<Props> = ({
           }}
         >
           {title}
+        </Typography>
+        <Typography
+          variant='caption'
+        >
+          {date}
         </Typography>
         <div>
           {contents !== null ?
