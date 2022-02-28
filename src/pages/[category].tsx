@@ -116,10 +116,6 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
     accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
   });
 
-  const entry = await client.getEntries<TechBlogModel>({
-    'content_type': 'techBlog',
-    // 'fields.category.fields.slug': params.category,
-  });
   const categoryEntry = await client.getEntries<CategoryModel>({
     'content_type': 'category',
     'fields.slug': params.category,
@@ -128,6 +124,12 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
   const category = categoryEntry.items.shift();
 
   if (typeof category !== 'undefined') {
+    const entry = await client.getEntries<TechBlogModel>({
+      'content_type': 'techBlog',
+      'fields.category.sys.contentType.sys.id': 'category',
+      'fields.category.fields.slug': params.category,
+    });
+
     return {
       props: {
         category: category,
