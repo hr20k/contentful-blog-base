@@ -77,7 +77,6 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
 
   const entry = await client.getEntries<TechBlogModel>({
     'content_type': 'techBlog',
-    'limit': 10,
   });
 
   return {

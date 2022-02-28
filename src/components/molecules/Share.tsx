@@ -27,7 +27,7 @@ const Share: React.FC<Props> = ({
 }) => {
   const url = `${siteUrl}/${path}`;
   const displayTitle = typeof title !== 'undefined' ?
-    `${siteTitle} | ${title}` :
+    `${title} | ${siteTitle}` :
     siteTitle;
 
   const ShareButton = styled(Box)({
