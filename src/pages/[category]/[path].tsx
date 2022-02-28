@@ -218,12 +218,18 @@ const Article: React.FC<Props> = ({
             />
           </Box>
          ) : null}
-        <BreadCrumbs breadCrumbs={breadCrumbs}/>
-        <Typography
-          variant='h1'
+        <Box
           sx={{
             marginTop: '48px',
             marginBottom: '8px',
+          }}
+        >
+          <BreadCrumbs breadCrumbs={breadCrumbs}/>
+        </Box>
+        <Typography
+          variant='h1'
+          sx={{
+            margin: '8px 0',
           }}
         >
           {title}
