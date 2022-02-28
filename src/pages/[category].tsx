@@ -70,7 +70,7 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     fields: {title, slug, thumbnail, contents},
   }) => {
     return {
-      href: `/article/${slug}`,
+      href: `/${category.fields.slug}/${slug}`,
       imageSrc: thumbnail?.fields.file.url,
       title,
       contents: createContentsStr(contents),

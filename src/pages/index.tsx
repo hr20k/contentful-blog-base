@@ -56,10 +56,10 @@ const HomeContainer: React.FC<ContainerProps> = ({
   };
 
   const links = React.useMemo(() => articles.map(({
-    fields: {title, slug, thumbnail, contents},
+    fields: {title, slug, thumbnail, category, contents},
   }) => {
     return {
-      href: `/article/${slug}`,
+      href: `/${category.fields.slug}/${slug}`,
       imageSrc: thumbnail?.fields.file.url,
       title,
       contents: createContentsStr(contents),

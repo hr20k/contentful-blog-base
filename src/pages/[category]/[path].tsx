@@ -11,24 +11,30 @@ import * as contentful from 'contentful';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import * as React from 'react';
 
-import {TechBlogModel} from '@/api/contentful/models/techBlog';
+import {CategoryModel, TechBlogModel} from '@/api/contentful/models/techBlog';
+import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {Header} from '@/components/molecules/Header';
 import {Share} from '@/components/molecules/Share';
+import {siteTitle} from '@/constants';
+import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {theme} from '@/styles/theme/theme';
 
 
 interface Params extends ParsedUrlQuery {
+  category: string;
   path: string;
 }
 
 interface ArticleContainerProps {
   path: string;
+  category: contentful.Entry<CategoryModel>;
   article: contentful.Entry<TechBlogModel>;
 }
 
 interface ArticleProps {
   path: string;
   title: string;
+  breadCrumbs: Array<BreadCrumbsModel>;
   imageSrc?: string;
   contents: Document | null;
 }
@@ -39,11 +45,30 @@ type Props = ArticleProps;
 
 const ArticleContainer: React.FC<ContainerProps> = ({
   path,
+  category,
   article,
 }: ContainerProps) => {
+  const breadCrumbs: Array<BreadCrumbsModel> = React.useMemo(() => {
+    return [
+      {
+        href: '/',
+        displayName: siteTitle,
+      },
+      {
+        href: `/${category.fields.slug}`,
+        displayName: category.fields.name,
+      },
+      {
+        href: `/${category.fields.slug}/${path}`,
+        displayName: article.fields.title,
+      },
+    ];
+  }, []);
+
   return (
     <Article
       path={path}
+      breadCrumbs={breadCrumbs}
       title={article.fields.title}
       imageSrc={article.fields.thumbnail?.fields.file?.url}
       contents={article.fields.contents}
@@ -60,17 +85,27 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
       accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
     });
 
+    const categoryEntry = await client.getEntries<CategoryModel>({
+      'content_type': 'category',
+      'fields.slug': params.category,
+      'limit': 1,
+    });
+    const category = categoryEntry.items.shift();
+
     const entry = await client.getEntries<TechBlogModel>({
       'content_type': 'techBlog',
       'fields.slug': params.path,
+      'fields.category.sys.contentType.sys.id': 'category',
+      'fields.category.fields.slug': params.category,
       'limit': 1,
     });
     const item = entry.items.shift();
 
-    if (typeof item !== 'undefined') {
+    if (typeof item !== 'undefined' && typeof category !== 'undefined') {
       return {
         props: {
           path: params.path,
+          category,
           article: item,
         },
       };
@@ -87,9 +122,12 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
     space: process.env.CONTENTFUL_SPACE_ID ?? '',
     accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
   });
-  const entries = await client.getEntries<TechBlogModel>();
+  const entries = await client.getEntries<TechBlogModel>({
+    'content_type': 'techBlog',
+  });
   const paths = entries.items.map((item) => ({
     params: {
+      category: item.fields.category.fields.slug,
       path: item.fields.slug,
     },
   }));
@@ -103,6 +141,7 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
 const Article: React.FC<Props> = ({
   path,
   title,
+  breadCrumbs,
   imageSrc,
   contents,
 }: Props) => {
@@ -179,6 +218,7 @@ const Article: React.FC<Props> = ({
             />
           </Box>
          ) : null}
+        <BreadCrumbs breadCrumbs={breadCrumbs}/>
         <Typography
           variant='h1'
           sx={{
