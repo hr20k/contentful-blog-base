@@ -1,33 +1,47 @@
 import {ParsedUrlQuery} from 'querystring';
 
 import {Block, Document, Inline} from '@contentful/rich-text-types';
-import {Box, Typography, useMediaQuery} from '@mui/material';
+import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import Head from 'next/head';
 import * as React from 'react';
 
-import {CategoryModel, TechBlogModel} from '@/api/contentful/models/techBlog';
+import {
+  CategoryModel,
+  TechBlogModel,
+  WithLinksCountCategory,
+} from '@/api/contentful/models/techBlog';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
+import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {Header} from '@/components/molecules/Header';
 import {siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
+import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
+import {withLinksCountToCategory} from '@/utils';
+
+const client = createClient({
+  space: process.env.CONTENTFUL_SPACE_ID ?? '',
+  accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
+});
 
 interface Params extends ParsedUrlQuery {
   category: string;
 }
 
 interface CategoryContainerProps {
-  category: Entry<CategoryModel>
+  category: Entry<CategoryModel>;
+  withLinksCountCategories: Array<WithLinksCountCategory>;
   articles: Array<Entry<TechBlogModel>>;
 }
 
 interface CategoryProps {
   categoryTitle: string;
   breadCrumbs: Array<BreadCrumbsModel>;
+    categories: Array<CategoryLink>;
   links: Array<{
     href: string;
     imageSrc?: string;
@@ -43,6 +57,7 @@ type Props = CategoryProps;
 
 const CategoryContainer: React.FC<ContainerProps> = ({
   category,
+  withLinksCountCategories,
   articles,
 }) => {
   const getValue = (content: Block | Inline): string => {
@@ -81,6 +96,13 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     };
   }), [articles]);
 
+  const categoryLinks = React.useMemo(() =>
+    withLinksCountCategories.map(({category, count}) => ({
+      title: category.fields.name,
+      count,
+      path: `/${category.fields.slug}`,
+    })), [withLinksCountCategories]);
+
   const categoryTitle = React.useMemo(() => category.fields.name, []);
 
   const breadCrumbs: Array<BreadCrumbsModel> = React.useMemo(() => {
@@ -101,6 +123,7 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     <Category
       categoryTitle={categoryTitle}
       breadCrumbs={breadCrumbs}
+      categories={categoryLinks}
       links={links}
     />
   );
@@ -115,19 +138,15 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
     };
   }
 
-  const client = createClient({
-    space: process.env.CONTENTFUL_SPACE_ID ?? '',
-    accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
-  });
-
-  const categoryEntry = await client.getEntries<CategoryModel>({
+  const categoryEntries = await client.getEntries<CategoryModel>({
     'content_type': 'category',
-    'fields.slug': params.category,
-    'limit': 1,
   });
-  const category = categoryEntry.items.shift();
+  const Linkscount = await withLinksCountToCategory(categoryEntries);
+  const currentCategory = categoryEntries.items.find(({fields}) =>
+    fields.slug === params.category,
+  );
 
-  if (typeof category !== 'undefined') {
+  if (typeof currentCategory !== 'undefined') {
     const entry = await client.getEntries<TechBlogModel>({
       'content_type': 'techBlog',
       'fields.category.sys.contentType.sys.id': 'category',
@@ -136,7 +155,8 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
 
     return {
       props: {
-        category: category,
+        category: currentCategory,
+        withLinksCountCategories: Linkscount,
         articles: entry.items,
       },
     };
@@ -148,10 +168,6 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
 };
 
 const getStaticPaths: GetStaticPaths<Params> = async () => {
-  const client = createClient({
-    space: process.env.CONTENTFUL_SPACE_ID ?? '',
-    accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
-  });
   const entries = await client.getEntries<CategoryModel>({
     'content_type': 'category',
   });
@@ -167,8 +183,13 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
   };
 };
 
-const Category: React.FC<Props> = ({categoryTitle, breadCrumbs, links}) => {
-  const matches = useMediaQuery(theme.breakpoints.up('sm'));
+const Category: React.FC<Props> = ({
+  categoryTitle,
+  breadCrumbs,
+  links,
+  categories,
+}) => {
+  const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
     <div>
@@ -183,47 +204,63 @@ const Category: React.FC<Props> = ({categoryTitle, breadCrumbs, links}) => {
         <Header />
         <Box
           sx={{
-            width: matches ? '640px' : 'auto',
-            margin: matches ? '0 auto 48px' : '0 16px 48px',
+            width: matches ? '900px' : 'auto',
+            margin: matches ? '48px auto 48px' : '48px 16px',
           }}
         >
-          <Box
-            sx={{
-              marginTop: '48px',
-              marginBottom: '8px',
-            }}
+          <Grid
+            container
+            spacing={5}
           >
-
-            <BreadCrumbs breadCrumbs={breadCrumbs}/>
-          </Box>
-          <Typography
-            variant='h1'
-            sx={{
-              margin: '8px 0',
-            }}
-          >
-            {categoryTitle}
-          </Typography>
-          {links.map(({href, title, date, imageSrc, contents}) => (
-            <Box
-              key={href}
-              sx={{
-                marginTop: '16px',
-                ['&:first-of-type']: {
-                  marginTop: '0',
-                },
-              }}
+            <Grid item sm={12} md={8}>
+              <Box>
+                <BreadCrumbs breadCrumbs={breadCrumbs}/>
+              </Box>
+              <Typography
+                variant='h1'
+                sx={{
+                  margin: '8px 0',
+                }}
+              >
+                {categoryTitle}
+              </Typography>
+              {links.map(({href, title, date, imageSrc, contents}) => (
+                <Box
+                  key={href}
+                  sx={{
+                    marginTop: '16px',
+                    ['&:first-of-type']: {
+                      marginTop: '0',
+                    },
+                  }}
+                >
+                  <ArticleCard
+                    key={href}
+                    href={href}
+                    title={title}
+                    date={date}
+                    imageSrc={imageSrc}
+                    contents={contents}
+                  />
+                </Box>
+              ))}
+            </Grid>
+            <Grid
+              item
+              sm={12}
+              md={4}
             >
-              <ArticleCard
-                key={href}
-                href={href}
-                title={title}
-                date={date}
-                imageSrc={imageSrc}
-                contents={contents}
-              />
-            </Box>
-          ))}
+              <Box
+                sx={{
+                  backgroundColor: '#eaeaea',
+                  borderRadius: '8px',
+                  padding: '16px',
+                }}
+              >
+                <CategoryLinkList categories={categories}/>
+              </Box>
+            </Grid>
+          </Grid>
         </Box>
       </main>
     </div>

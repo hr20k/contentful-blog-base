@@ -14,4 +14,13 @@ interface CategoryModel {
   name: EntryFields.Text;
 }
 
-export type {TechBlogModel, CategoryModel};
+interface WithLinksCountCategory {
+  category: Entry<CategoryModel>;
+  count: number;
+}
+
+export type {
+  TechBlogModel,
+  CategoryModel,
+  WithLinksCountCategory,
+};

@@ -7,19 +7,26 @@ import {
 } from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
-import {Box, Typography, useMediaQuery} from '@mui/material';
+import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import * as React from 'react';
 
-import {CategoryModel, TechBlogModel} from '@/api/contentful/models/techBlog';
+import {
+  CategoryModel,
+  TechBlogModel,
+  WithLinksCountCategory,
+} from '@/api/contentful/models/techBlog';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
+import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {Header} from '@/components/molecules/Header';
 import {Share} from '@/components/molecules/Share';
 import {siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
+import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
+import {withLinksCountToCategory} from '@/utils';
 
 
 interface Params extends ParsedUrlQuery {
@@ -31,6 +38,7 @@ interface ArticleContainerProps {
   path: string;
   category: contentful.Entry<CategoryModel>;
   article: contentful.Entry<TechBlogModel>;
+    withLinksCountCategories: Array<WithLinksCountCategory>;
 }
 
 interface ArticleProps {
@@ -40,6 +48,7 @@ interface ArticleProps {
   breadCrumbs: Array<BreadCrumbsModel>;
   imageSrc?: string;
   contents: Document | null;
+    categories: Array<CategoryLink>;
 }
 
 type ContainerProps = ArticleContainerProps;
@@ -50,6 +59,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
   path,
   category,
   article,
+  withLinksCountCategories,
 }: ContainerProps) => {
   const breadCrumbs: Array<BreadCrumbsModel> = React.useMemo(() => {
     return [
@@ -68,6 +78,14 @@ const ArticleContainer: React.FC<ContainerProps> = ({
     ];
   }, []);
 
+  const categoryLinks = React.useMemo(() =>
+    withLinksCountCategories.map(({category, count}) => ({
+      title: category.fields.name,
+      count,
+      path: `/${category.fields.slug}`,
+    })), [withLinksCountCategories]);
+
+
   return (
     <Article
       path={path}
@@ -76,6 +94,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
       breadCrumbs={breadCrumbs}
       imageSrc={article.fields.thumbnail?.fields.file?.url}
       contents={article.fields.contents}
+      categories={categoryLinks}
     />
   );
 };
@@ -89,12 +108,13 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
       accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
     });
 
-    const categoryEntry = await client.getEntries<CategoryModel>({
+    const categoryEntries = await client.getEntries<CategoryModel>({
       'content_type': 'category',
-      'fields.slug': params.category,
-      'limit': 1,
     });
-    const category = categoryEntry.items.shift();
+    const Linkscount = await withLinksCountToCategory(categoryEntries);
+    const currentCategory = categoryEntries.items.find(({fields}) =>
+      fields.slug === params.category,
+    );
 
     const entry = await client.getEntries<TechBlogModel>({
       'content_type': 'techBlog',
@@ -105,11 +125,12 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
     });
     const item = entry.items.shift();
 
-    if (typeof item !== 'undefined' && typeof category !== 'undefined') {
+    if (typeof item !== 'undefined' && typeof currentCategory !== 'undefined') {
       return {
         props: {
           path: params.path,
-          category,
+          category: currentCategory,
+          withLinksCountCategories: Linkscount,
           article: item,
         },
       };
@@ -149,11 +170,11 @@ const Article: React.FC<Props> = ({
   breadCrumbs,
   imageSrc,
   contents,
+  categories,
 }: Props) => {
-  const matches = useMediaQuery(theme.breakpoints.up('sm'));
+  const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   const Img = styled.img({
-    marginTop: '48px',
     objectFit: 'cover',
     borderRadius: '4px',
   });
@@ -206,11 +227,13 @@ const Article: React.FC<Props> = ({
       <Box
         component='article'
         sx={{
-          width: matches ? '640px' : 'auto',
-          margin: matches ? '0 auto 48px' : '0 16px 48px',
+          width: matches ? '900px' : 'auto',
+          margin: matches ? '48px auto' : '48px 16px',
         }}
       >
-        {typeof imageSrc !== 'undefined' ? (
+        <Grid container spacing={5}>
+          <Grid item sm={12} md={8}>
+            {typeof imageSrc !== 'undefined' ? (
           <Box>
             <Img
               src={imageSrc}
@@ -223,33 +246,45 @@ const Article: React.FC<Props> = ({
             />
           </Box>
          ) : null}
-        <Box
-          sx={{
-            marginTop: '48px',
-            marginBottom: '8px',
-          }}
-        >
-          <BreadCrumbs breadCrumbs={breadCrumbs}/>
-        </Box>
-        <Typography
-          variant='h1'
-          sx={{
-            margin: '8px 0',
-          }}
-        >
-          {title}
-        </Typography>
-        <Typography
-          variant='caption'
-        >
-          {date}
-        </Typography>
-        <div>
-          {contents !== null ?
+            <Box>
+              <BreadCrumbs breadCrumbs={breadCrumbs}/>
+            </Box>
+            <Typography
+              variant='h1'
+              sx={{
+                margin: '8px 0',
+              }}
+            >
+              {title}
+            </Typography>
+            <Typography
+              variant='caption'
+            >
+              {date}
+            </Typography>
+            <div>
+              {contents !== null ?
           documentToReactComponents(contents, options) :
            null}
-        </div>
-        <Share path={path} title={title}/>
+            </div>
+            <Share path={path} title={title}/>
+          </Grid>
+          <Grid
+            item
+            sm={12}
+            md={4}
+          >
+            <Box
+              sx={{
+                backgroundColor: '#eaeaea',
+                borderRadius: '8px',
+                padding: '16px',
+              }}
+            >
+              <CategoryLinkList categories={categories}/>
+            </Box>
+          </Grid>
+        </Grid>
       </Box>
     </main>
   );
