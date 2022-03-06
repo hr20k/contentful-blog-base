@@ -13,6 +13,7 @@ import {
   TechBlogModel,
   WithLinksCountCategory,
 } from '@/api/contentful/models/techBlog';
+import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
@@ -41,7 +42,7 @@ interface CategoryContainerProps {
 interface CategoryProps {
   categoryTitle: string;
   breadCrumbs: Array<BreadCrumbsModel>;
-    categories: Array<CategoryLink>;
+  categories: Array<CategoryLink>;
   links: Array<{
     href: string;
     imageSrc?: string;
@@ -61,12 +62,14 @@ const CategoryContainer: React.FC<ContainerProps> = ({
   articles,
 }) => {
   const getValue = (content: Block | Inline): string => {
-    return content.content.map((c) => {
-      if (c.nodeType === 'text') {
-        return c.value;
-      }
-      return getValue(c);
-    }).join('');
+    return content.content
+      .map((c) => {
+        if (c.nodeType === 'text') {
+          return c.value;
+        }
+        return getValue(c);
+      })
+      .join('');
   };
 
   const createContentsStr = (contents: Document | null): string => {
@@ -83,25 +86,30 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     return contentsStr;
   };
 
-  const links = React.useMemo(() => articles.map(({
-    fields: {title, slug, thumbnail, contents},
-    sys: {createdAt},
-  }) => {
-    return {
-      href: `/${category.fields.slug}/${slug}`,
-      imageSrc: thumbnail?.fields.file.url,
-      title,
-      date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
-      contents: createContentsStr(contents),
-    };
-  }), [articles]);
+  const links = React.useMemo(
+    () =>
+      articles.map(({fields: {title, slug, thumbnail, contents}, sys: {createdAt}}) => {
+        return {
+          href: `/${category.fields.slug}/${slug}`,
+          imageSrc: thumbnail?.fields.file.url,
+          title,
+          date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
+          contents: createContentsStr(contents),
+        };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [articles]
+  );
 
-  const categoryLinks = React.useMemo(() =>
-    withLinksCountCategories.map(({category, count}) => ({
-      title: category.fields.name,
-      count,
-      path: `/${category.fields.slug}`,
-    })), [withLinksCountCategories]);
+  const categoryLinks = React.useMemo(
+    () =>
+      withLinksCountCategories.map(({category, count}) => ({
+        title: category.fields.name,
+        count,
+        path: `/${category.fields.slug}`,
+      })),
+    [withLinksCountCategories]
+  );
 
   const categoryTitle = React.useMemo(() => category.fields.name, []);
 
@@ -118,7 +126,6 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     ];
   }, []);
 
-
   return (
     <Category
       categoryTitle={categoryTitle}
@@ -129,9 +136,7 @@ const CategoryContainer: React.FC<ContainerProps> = ({
   );
 };
 
-const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
-  params,
-}) => {
+const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) => {
   if (typeof params === 'undefined') {
     return {
       notFound: true,
@@ -139,16 +144,15 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
   }
 
   const categoryEntries = await client.getEntries<CategoryModel>({
-    'content_type': 'category',
+    content_type: 'category',
+    order: 'fields.order',
   });
   const Linkscount = await withLinksCountToCategory(categoryEntries);
-  const currentCategory = categoryEntries.items.find(({fields}) =>
-    fields.slug === params.category,
-  );
+  const currentCategory = categoryEntries.items.find(({fields}) => fields.slug === params.category);
 
   if (typeof currentCategory !== 'undefined') {
     const entry = await client.getEntries<TechBlogModel>({
-      'content_type': 'techBlog',
+      content_type: 'techBlog',
       'fields.category.sys.contentType.sys.id': 'category',
       'fields.category.fields.slug': params.category,
     });
@@ -169,7 +173,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
 
 const getStaticPaths: GetStaticPaths<Params> = async () => {
   const entries = await client.getEntries<CategoryModel>({
-    'content_type': 'category',
+    content_type: 'category',
   });
   const paths = entries.items.map((item) => ({
     params: {
@@ -183,23 +187,12 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
   };
 };
 
-const Category: React.FC<Props> = ({
-  categoryTitle,
-  breadCrumbs,
-  links,
-  categories,
-}) => {
+const Category: React.FC<Props> = ({categoryTitle, breadCrumbs, links, categories}) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
-    <div>
-      <Head>
-        <title>{`${categoryTitle} | Tech Blog`}</title>
-        <meta name="description" content="フロントエンドの技術的なことを書くブログです" />
-        <meta name="viewport" content="initial-scale=1, width=device-width" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
+    <>
+      <Seo title={categoryTitle} />
       <main>
         <Header />
         <Box
@@ -208,16 +201,13 @@ const Category: React.FC<Props> = ({
             margin: matches ? '48px auto 48px' : '48px 16px',
           }}
         >
-          <Grid
-            container
-            spacing={5}
-          >
+          <Grid container spacing={5}>
             <Grid item sm={12} md={8}>
               <Box>
-                <BreadCrumbs breadCrumbs={breadCrumbs}/>
+                <BreadCrumbs breadCrumbs={breadCrumbs} />
               </Box>
               <Typography
-                variant='h1'
+                variant="h1"
                 sx={{
                   margin: '8px 0',
                 }}
@@ -245,11 +235,7 @@ const Category: React.FC<Props> = ({
                 </Box>
               ))}
             </Grid>
-            <Grid
-              item
-              sm={12}
-              md={4}
-            >
+            <Grid item xs={12} sm={12} md={4}>
               <Box
                 sx={{
                   backgroundColor: '#eaeaea',
@@ -257,13 +243,13 @@ const Category: React.FC<Props> = ({
                   padding: '16px',
                 }}
               >
-                <CategoryLinkList categories={categories}/>
+                <CategoryLinkList categories={categories} />
               </Box>
             </Grid>
           </Grid>
         </Box>
       </main>
-    </div>
+    </>
   );
 };
 

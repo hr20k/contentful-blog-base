@@ -1,11 +1,5 @@
 import styled from '@emotion/styled';
-import {
-  Box,
-  Paper,
-  Typography,
-  Link as MuiLink,
-  useMediaQuery,
-} from '@mui/material';
+import {Box, Paper, Typography, Link as MuiLink, useMediaQuery} from '@mui/material';
 import Link from 'next/link';
 import * as React from 'react';
 
@@ -27,13 +21,7 @@ const Img = styled.img({
   borderTopRightRadius: '4px',
 });
 
-const ArticleCard: React.FC<Props> = ({
-  href,
-  imageSrc,
-  title,
-  date,
-  contents,
-}) => {
+const ArticleCard: React.FC<Props> = ({href, imageSrc, title, date, contents}) => {
   const matches = useMediaQuery(theme.breakpoints.up('sm'));
 
   return (
@@ -45,7 +33,6 @@ const ArticleCard: React.FC<Props> = ({
         }}
       >
         <Paper>
-
           <Box
             sx={{
               display: 'flex',
@@ -57,10 +44,8 @@ const ArticleCard: React.FC<Props> = ({
                 src={imageSrc ?? '/images/home.png'}
                 alt="article-image"
                 width="100%"
-                height={
-                  matches ? '320px' : 'calc((100vw - 32px) * (320 / 640))'
-                }
-                loading='lazy'
+                height={matches ? '320px' : 'calc((100vw - 32px) * (320 / 640))'}
+                loading="lazy"
               />
             </Box>
             <Box
@@ -71,11 +56,7 @@ const ArticleCard: React.FC<Props> = ({
                 margin: '1rem',
               }}
             >
-              <Typography
-                variant='h2'
-              >
-                {title}
-              </Typography>
+              <Typography variant="h2">{title}</Typography>
               <Typography
                 sx={{
                   marginTop: '1rem',
@@ -88,7 +69,7 @@ const ArticleCard: React.FC<Props> = ({
                 {contents}
               </Typography>
               <Typography
-                variant='caption'
+                variant="caption"
                 sx={{
                   marginTop: '8px',
                 }}

@@ -1,16 +1,13 @@
 import {ParsedUrlQuery} from 'querystring';
 
-
-import {
-  documentToReactComponents,
-  Options,
-} from '@contentful/rich-text-react-renderer';
+import {documentToReactComponents, Options} from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
+import Image from 'next/image';
 import * as React from 'react';
 
 import {
@@ -18,6 +15,7 @@ import {
   TechBlogModel,
   WithLinksCountCategory,
 } from '@/api/contentful/models/techBlog';
+import {Seo} from '@/components/atoms/Seo';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {Header} from '@/components/molecules/Header';
@@ -28,7 +26,6 @@ import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
 import {withLinksCountToCategory} from '@/utils';
 
-
 interface Params extends ParsedUrlQuery {
   category: string;
   path: string;
@@ -38,7 +35,7 @@ interface ArticleContainerProps {
   path: string;
   category: contentful.Entry<CategoryModel>;
   article: contentful.Entry<TechBlogModel>;
-    withLinksCountCategories: Array<WithLinksCountCategory>;
+  withLinksCountCategories: Array<WithLinksCountCategory>;
 }
 
 interface ArticleProps {
@@ -47,8 +44,10 @@ interface ArticleProps {
   date: string;
   breadCrumbs: Array<BreadCrumbsModel>;
   imageSrc?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   contents: Document | null;
-    categories: Array<CategoryLink>;
+  categories: Array<CategoryLink>;
 }
 
 type ContainerProps = ArticleContainerProps;
@@ -78,13 +77,15 @@ const ArticleContainer: React.FC<ContainerProps> = ({
     ];
   }, []);
 
-  const categoryLinks = React.useMemo(() =>
-    withLinksCountCategories.map(({category, count}) => ({
-      title: category.fields.name,
-      count,
-      path: `/${category.fields.slug}`,
-    })), [withLinksCountCategories]);
-
+  const categoryLinks = React.useMemo(
+    () =>
+      withLinksCountCategories.map(({category, count}) => ({
+        title: category.fields.name,
+        count,
+        path: `/${category.fields.slug}`,
+      })),
+    [withLinksCountCategories]
+  );
 
   return (
     <Article
@@ -93,15 +94,15 @@ const ArticleContainer: React.FC<ContainerProps> = ({
       date={`${format(new Date(article.sys.createdAt), 'yyyy年MM月dd日 HH:mm')}`}
       breadCrumbs={breadCrumbs}
       imageSrc={article.fields.thumbnail?.fields.file?.url}
+      imageWidth={article.fields.thumbnail?.fields.file.details.image?.width}
+      imageHeight={article.fields.thumbnail?.fields.file.details.image?.height}
       contents={article.fields.contents}
       categories={categoryLinks}
     />
   );
 };
 
-const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
-  params,
-}) => {
+const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) => {
   if (params?.path) {
     const client = contentful.createClient({
       space: process.env.CONTENTFUL_SPACE_ID ?? '',
@@ -109,19 +110,21 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({
     });
 
     const categoryEntries = await client.getEntries<CategoryModel>({
-      'content_type': 'category',
+      content_type: 'category',
+      order: 'fields.order',
     });
+
     const Linkscount = await withLinksCountToCategory(categoryEntries);
-    const currentCategory = categoryEntries.items.find(({fields}) =>
-      fields.slug === params.category,
+    const currentCategory = categoryEntries.items.find(
+      ({fields}) => fields.slug === params.category
     );
 
     const entry = await client.getEntries<TechBlogModel>({
-      'content_type': 'techBlog',
+      content_type: 'techBlog',
       'fields.slug': params.path,
       'fields.category.sys.contentType.sys.id': 'category',
       'fields.category.fields.slug': params.category,
-      'limit': 1,
+      limit: 1,
     });
     const item = entry.items.shift();
 
@@ -148,7 +151,7 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
     accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
   });
   const entries = await client.getEntries<TechBlogModel>({
-    'content_type': 'techBlog',
+    content_type: 'techBlog',
   });
   const paths = entries.items.map((item) => ({
     params: {
@@ -169,15 +172,12 @@ const Article: React.FC<Props> = ({
   date,
   breadCrumbs,
   imageSrc,
+  imageWidth,
+  imageHeight,
   contents,
   categories,
 }: Props) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
-
-  const Img = styled.img({
-    objectFit: 'cover',
-    borderRadius: '4px',
-  });
 
   const options: Options = {
     renderNode: {
@@ -188,7 +188,13 @@ const Article: React.FC<Props> = ({
           'marks' in content &&
           content.marks.find((x) => x.type === 'code')
         ) {
-          return <div><pre><code>{children}</code></pre></div>;
+          return (
+            <div>
+              <pre>
+                <code>{children}</code>
+              </pre>
+            </div>
+          );
         }
         return <p>{children}</p>;
       },
@@ -199,22 +205,17 @@ const Article: React.FC<Props> = ({
               margin: '16px 0',
             }}
           >
-            <img
-              src={node.data.target.fields.file.url}
-              width="100%"
-              object-fit="cover"
+            <Image
+              src={`https:${node.data.target.fields.file.url}`}
+              width={node.data.target.fields.file.details.image.width}
+              height={node.data.target.fields.file.details.image.height}
               alt={node.data.target.fields.title}
-              loading='lazy'
             />
             {'fields' in node.data.target &&
-              'description' in node.data.target.fields &&
-              node.data.target.fields.description !== '' ? (
-              <Typography
-                variant="caption"
-              >
-                {node.data.target.fields.description}
-              </Typography>
-            ): null}
+            'description' in node.data.target.fields &&
+            node.data.target.fields.description !== '' ? (
+              <Typography variant="caption">{node.data.target.fields.description}</Typography>
+            ) : null}
           </Box>
         );
       },
@@ -222,71 +223,59 @@ const Article: React.FC<Props> = ({
   };
 
   return (
-    <main>
-      <Header />
-      <Box
-        component='article'
-        sx={{
-          width: matches ? '900px' : 'auto',
-          margin: matches ? '48px auto' : '48px 16px',
-        }}
-      >
-        <Grid container spacing={5}>
-          <Grid item sm={12} md={8}>
-            {typeof imageSrc !== 'undefined' ? (
-          <Box>
-            <Img
-              src={imageSrc}
-              alt='thumbnail'
-              width="100%"
-              height={
-                matches ? '320px' : 'calc((100vw - 32px) * (320 / 640))'
-              }
-              loading='lazy'
-            />
-          </Box>
-         ) : null}
-            <Box>
-              <BreadCrumbs breadCrumbs={breadCrumbs}/>
-            </Box>
-            <Typography
-              variant='h1'
-              sx={{
-                margin: '8px 0',
-              }}
-            >
-              {title}
-            </Typography>
-            <Typography
-              variant='caption'
-            >
-              {date}
-            </Typography>
-            <div>
-              {contents !== null ?
-          documentToReactComponents(contents, options) :
-           null}
-            </div>
-            <Share path={path} title={title}/>
+    <>
+      <Seo title={title} />
+      <main>
+        <Header />
+        <Box
+          component="article"
+          sx={{
+            width: matches ? '900px' : 'auto',
+            margin: matches ? '48px auto' : '48px 16px',
+          }}
+        >
+          <Grid container spacing={5}>
+            <Grid item sm={12} md={8}>
+              {typeof imageSrc !== 'undefined' ? (
+                <Box>
+                  <Image
+                    src={`https:${imageSrc}`}
+                    alt="thumbnail"
+                    width={imageWidth}
+                    height={imageHeight}
+                  />
+                </Box>
+              ) : null}
+              <Box>
+                <BreadCrumbs breadCrumbs={breadCrumbs} />
+              </Box>
+              <Typography
+                variant="h1"
+                sx={{
+                  margin: '8px 0',
+                }}
+              >
+                {title}
+              </Typography>
+              <Typography variant="caption">{date}</Typography>
+              <div>{contents !== null ? documentToReactComponents(contents, options) : null}</div>
+              <Share path={path} title={title} />
+            </Grid>
+            <Grid item xs={12} sm={12} md={4}>
+              <Box
+                sx={{
+                  backgroundColor: '#eaeaea',
+                  borderRadius: '8px',
+                  padding: '16px',
+                }}
+              >
+                <CategoryLinkList categories={categories} />
+              </Box>
+            </Grid>
           </Grid>
-          <Grid
-            item
-            sm={12}
-            md={4}
-          >
-            <Box
-              sx={{
-                backgroundColor: '#eaeaea',
-                borderRadius: '8px',
-                padding: '16px',
-              }}
-            >
-              <CategoryLinkList categories={categories}/>
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
-    </main>
+        </Box>
+      </main>
+    </>
   );
 };
 

@@ -14,21 +14,18 @@ const Header: React.FC = () => {
     height: '200px',
   });
 
-  const Logo = styled(Link)({
-  });
+  const Logo = styled(Link)({});
 
   return (
     <HeaderBar>
-      <Logo
-        href={siteUrl}
-      >
+      <Logo href={siteUrl}>
         <a>
           <Image
             src="/images/logo.png"
             width="650px"
             height="120px"
-            alt='Tech Blog'
-            objectFit='cover'
+            alt="Tech Blog"
+            objectFit="cover"
           />
         </a>
       </Logo>

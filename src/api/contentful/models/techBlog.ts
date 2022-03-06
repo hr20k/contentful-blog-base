@@ -12,6 +12,7 @@ interface TechBlogModel {
 interface CategoryModel {
   slug: EntryFields.Text;
   name: EntryFields.Text;
+  order?: number;
 }
 
 interface WithLinksCountCategory {
@@ -19,8 +20,4 @@ interface WithLinksCountCategory {
   count: number;
 }
 
-export type {
-  TechBlogModel,
-  CategoryModel,
-  WithLinksCountCategory,
-};
+export type {TechBlogModel, CategoryModel, WithLinksCountCategory};

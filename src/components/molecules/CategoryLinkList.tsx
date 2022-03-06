@@ -10,12 +10,10 @@ interface CategotyLinkListProps {
 
 type Props = CategotyLinkListProps;
 
-const CategoryLinkList: React.FC<Props> = ({
-  categories,
-}) => {
+const CategoryLinkList: React.FC<Props> = ({categories}) => {
   return (
     <>
-      <Typography variant='h3'>カテゴリー</Typography>
+      <Typography variant="h3">カテゴリー</Typography>
       <List sx={{marginTop: '16px'}}>
         {categories.map(({title, count, path}) => (
           <ListItem

@@ -1,17 +1,10 @@
 import createEmotionServer from '@emotion/server/create-instance';
 import {RenderPageResult} from 'next/dist/shared/lib/utils';
-import Document, {
-  DocumentContext,
-  Html,
-  Head,
-  Main,
-  NextScript,
-} from 'next/document';
+import Document, {DocumentContext, Html, Head, Main, NextScript} from 'next/document';
 import * as React from 'react';
 
+import {createEmotionCache} from '@/createEmotionCache';
 import {theme} from '@/styles/theme/theme';
-
-import {createEmotionCache} from '../createEmotionCache';
 
 /**
  *
@@ -37,8 +30,8 @@ class MyDocument extends Document {
     ctx.renderPage = (): RenderPageResult | Promise<RenderPageResult> =>
       originalRenderPage({
         enhanceApp:
-        (App: any) =>
-        // eslint-disable-next-line react/display-name
+          (App: any) =>
+          // eslint-disable-next-line react/display-name
           (props): JSX.Element =>
             <App emotionCache={cache} {...props} />,
       });
@@ -56,10 +49,7 @@ class MyDocument extends Document {
 
     return {
       ...initialProps,
-      styles: [
-        ...React.Children.toArray(initialProps.styles),
-        ...emotionStyleTags,
-      ],
+      styles: [...React.Children.toArray(initialProps.styles), ...emotionStyleTags],
     };
   }
 
@@ -83,10 +73,7 @@ class MyDocument extends Document {
             rel="stylesheet"
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
           />
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/icon?family=Material+Icons"
-          />
+          <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
         </Head>
         <body>
           <Main />

@@ -21,14 +21,9 @@ interface ShareProps {
 
 type Props = ShareProps;
 
-const Share: React.FC<Props> = ({
-  path = '',
-  title,
-}) => {
+const Share: React.FC<Props> = ({path = '', title}) => {
   const url = `${siteUrl}/${path}`;
-  const displayTitle = typeof title !== 'undefined' ?
-    `${title} | ${siteTitle}` :
-    siteTitle;
+  const displayTitle = typeof title !== 'undefined' ? `${title} | ${siteTitle}` : siteTitle;
 
   const ShareButton = styled(Box)({
     marginLeft: '1rem',
@@ -47,42 +42,28 @@ const Share: React.FC<Props> = ({
       }}
     >
       <ShareButton>
-        <TwitterShareButton
-          url={url}
-          title={displayTitle}
-        >
+        <TwitterShareButton url={url} title={displayTitle}>
           <TwitterIcon size={30} round={true} />
         </TwitterShareButton>
       </ShareButton>
 
       <ShareButton>
-        <FacebookShareButton
-          url={url}
-          title={displayTitle}
-        >
+        <FacebookShareButton url={url} title={displayTitle}>
           <FacebookIcon size={30} round={true} />
         </FacebookShareButton>
       </ShareButton>
 
       <ShareButton>
-        <LineShareButton
-          url={url}
-          title={displayTitle}
-        >
+        <LineShareButton url={url} title={displayTitle}>
           <LineIcon size={30} round={true} />
         </LineShareButton>
       </ShareButton>
 
       <ShareButton>
-        <HatenaShareButton
-          url={url}
-          title={displayTitle}
-        >
+        <HatenaShareButton url={url} title={displayTitle}>
           <HatenaIcon size={30} round={true} />
         </HatenaShareButton>
       </ShareButton>
-
-
     </Box>
   );
 };

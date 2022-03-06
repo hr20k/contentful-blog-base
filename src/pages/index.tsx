@@ -1,9 +1,5 @@
 import {Block, Document, Inline} from '@contentful/rich-text-types';
-import {
-  Box,
-  Grid,
-  useMediaQuery,
-} from '@mui/material';
+import {Box, Grid, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticProps} from 'next';
@@ -15,13 +11,13 @@ import {
   TechBlogModel,
   WithLinksCountCategory,
 } from '@/api/contentful/models/techBlog';
+import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {Header} from '@/components/molecules/Header';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
 import {withLinksCountToCategory} from '@/utils';
-
 
 interface HomeContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
@@ -43,17 +39,16 @@ type ContainerProps = HomeContainerProps;
 
 type Props = HomeProps;
 
-const HomeContainer: React.FC<ContainerProps> = ({
-  withLinksCountCategories,
-  articles,
-}) => {
+const HomeContainer: React.FC<ContainerProps> = ({withLinksCountCategories, articles}) => {
   const getValue = (content: Block | Inline): string => {
-    return content.content.map((c) => {
-      if (c.nodeType === 'text') {
-        return c.value;
-      }
-      return getValue(c);
-    }).join('');
+    return content.content
+      .map((c) => {
+        if (c.nodeType === 'text') {
+          return c.value;
+        }
+        return getValue(c);
+      })
+      .join('');
   };
 
   const createContentsStr = (contents: Document | null): string => {
@@ -70,27 +65,32 @@ const HomeContainer: React.FC<ContainerProps> = ({
     return contentsStr;
   };
 
-  const links = React.useMemo(() => articles.map(({
-    fields: {title, slug, thumbnail, category, contents},
-    sys: {createdAt},
-  }) => {
-    return {
-      href: `/${category.fields.slug}/${slug}`,
-      imageSrc: thumbnail?.fields.file.url,
-      title,
-      date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
-      contents: createContentsStr(contents),
-    };
-  }), [articles]);
+  const links = React.useMemo(
+    () =>
+      articles.map(({fields: {title, slug, thumbnail, category, contents}, sys: {createdAt}}) => {
+        return {
+          href: `/${category.fields.slug}/${slug}`,
+          imageSrc: thumbnail?.fields.file.url,
+          title,
+          date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
+          contents: createContentsStr(contents),
+        };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [articles]
+  );
 
-  const categoryLinks = React.useMemo(() =>
-    withLinksCountCategories.map(({category, count}) => ({
-      title: category.fields.name,
-      count,
-      path: `/${category.fields.slug}`,
-    })), [withLinksCountCategories]);
+  const categoryLinks = React.useMemo(
+    () =>
+      withLinksCountCategories.map(({category, count}) => ({
+        title: category.fields.name,
+        count,
+        path: `/${category.fields.slug}`,
+      })),
+    [withLinksCountCategories]
+  );
 
-  return <Home links={links} categories={categoryLinks}/>;
+  return <Home links={links} categories={categoryLinks} />;
 };
 
 const getStaticProps: GetStaticProps<ContainerProps> = async () => {
@@ -100,10 +100,11 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
   });
 
   const entry = await client.getEntries<TechBlogModel>({
-    'content_type': 'techBlog',
+    content_type: 'techBlog',
   });
   const categoryEntries = await client.getEntries<CategoryModel>({
-    'content_type': 'category',
+    content_type: 'category',
+    order: 'fields.order',
   });
   const Linkscount = await withLinksCountToCategory(categoryEntries);
 
@@ -119,16 +120,9 @@ const Home: React.FC<Props> = ({links, categories}) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
-    <div>
-      <Head>
-        <title>Tech Blog</title>
-        <meta name="description" content="フロントエンドの技術的なことを書くブログです" />
-        <meta name="viewport" content="initial-scale=1, width=device-width" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
+    <>
+      <Seo />
       <main>
-        <Header />
         <Box
           sx={{
             width: matches ? '900px' : 'auto',
@@ -158,11 +152,7 @@ const Home: React.FC<Props> = ({links, categories}) => {
                 </Box>
               ))}
             </Grid>
-            <Grid
-              item
-              sm={12}
-              md={4}
-            >
+            <Grid item xs={12} sm={12} md={4}>
               <Box
                 sx={{
                   backgroundColor: '#eaeaea',
@@ -170,13 +160,13 @@ const Home: React.FC<Props> = ({links, categories}) => {
                   padding: '16px',
                 }}
               >
-                <CategoryLinkList categories={categories}/>
+                <CategoryLinkList categories={categories} />
               </Box>
             </Grid>
           </Grid>
         </Box>
       </main>
-    </div>
+    </>
   );
 };
 
