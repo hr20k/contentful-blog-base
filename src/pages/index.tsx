@@ -123,6 +123,7 @@ const Home: React.FC<Props> = ({links, categories}) => {
     <>
       <Seo />
       <main>
+        <Header />
         <Box
           sx={{
             width: matches ? '900px' : 'auto',
