@@ -10,7 +10,7 @@ const Header: React.FC = () => {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#d8eefe',
     height: '200px',
   });
 
