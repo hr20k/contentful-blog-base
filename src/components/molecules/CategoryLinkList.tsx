@@ -13,7 +13,9 @@ type Props = CategotyLinkListProps;
 const CategoryLinkList: React.FC<Props> = ({categories}) => {
   return (
     <>
-      <Typography variant="h3">カテゴリー</Typography>
+      <Typography variant="h3" sx={{color: '#fffffe'}}>
+        カテゴリー
+      </Typography>
       <List sx={{marginTop: '16px'}}>
         {categories.map(({title, count, path}) => (
           <ListItem

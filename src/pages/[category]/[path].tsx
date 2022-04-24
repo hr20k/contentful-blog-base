@@ -263,7 +263,7 @@ const Article: React.FC<Props> = ({
             <Grid item xs={12} sm={12} md={4}>
               <Box
                 sx={{
-                  backgroundColor: '#eaeaea',
+                  backgroundColor: '#094067',
                   borderRadius: '8px',
                   padding: '16px',
                 }}

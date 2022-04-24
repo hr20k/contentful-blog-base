@@ -5,7 +5,6 @@ import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
-import Head from 'next/head';
 import * as React from 'react';
 
 import {
@@ -238,7 +237,7 @@ const Category: React.FC<Props> = ({categoryTitle, breadCrumbs, links, categorie
             <Grid item xs={12} sm={12} md={4}>
               <Box
                 sx={{
-                  backgroundColor: '#eaeaea',
+                  backgroundColor: '#094067',
                   borderRadius: '8px',
                   padding: '16px',
                 }}
