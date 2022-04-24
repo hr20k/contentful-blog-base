@@ -18,7 +18,7 @@ import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {Header} from '@/components/molecules/Header';
-import {siteTitle} from '@/constants';
+import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
@@ -144,7 +144,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
   }
 
   const categoryEntries = await client.getEntries<CategoryModel>({
-    content_type: 'category',
+    content_type: ContentType.Category,
     order: 'fields.order',
   });
   const Linkscount = await withLinksCountToCategory(categoryEntries);
@@ -152,8 +152,8 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
 
   if (typeof currentCategory !== 'undefined') {
     const entry = await client.getEntries<TechBlogModel>({
-      content_type: 'techBlog',
-      'fields.category.sys.contentType.sys.id': 'category',
+      content_type: ContentType.Article,
+      'fields.category.sys.contentType.sys.id': ContentType.Category,
       'fields.category.fields.slug': params.category,
     });
 
@@ -173,7 +173,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
 
 const getStaticPaths: GetStaticPaths<Params> = async () => {
   const entries = await client.getEntries<CategoryModel>({
-    content_type: 'category',
+    content_type: ContentType.Category,
   });
   const paths = entries.items.map((item) => ({
     params: {

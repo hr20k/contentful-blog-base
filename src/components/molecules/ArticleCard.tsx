@@ -41,8 +41,9 @@ const ArticleCard: React.FC<Props> = ({href, imageSrc, title, date, contents}) =
           >
             <Box>
               <Img
+                // TODO: Contentful から取得する
                 src={imageSrc ?? '/images/home.png'}
-                alt="article-image"
+                alt={title}
                 width="100%"
                 height={matches ? '320px' : 'calc((100vw - 32px) * (320 / 640))'}
                 loading="lazy"

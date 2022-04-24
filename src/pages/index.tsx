@@ -3,7 +3,6 @@ import {Box, Grid, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticProps} from 'next';
-import Head from 'next/head';
 import * as React from 'react';
 
 import {
@@ -15,6 +14,7 @@ import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {Header} from '@/components/molecules/Header';
+import {ContentType} from '@/constants';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
 import {withLinksCountToCategory} from '@/utils';
@@ -100,10 +100,10 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
   });
 
   const entry = await client.getEntries<TechBlogModel>({
-    content_type: 'techBlog',
+    content_type: ContentType.Article,
   });
   const categoryEntries = await client.getEntries<CategoryModel>({
-    content_type: 'category',
+    content_type: ContentType.Category,
     order: 'fields.order',
   });
   const Linkscount = await withLinksCountToCategory(categoryEntries);

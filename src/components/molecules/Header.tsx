@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import * as React from 'react';
 
-import {siteUrl} from '@/constants';
+import {siteTitle, siteUrl} from '@/constants';
 
 const Header: React.FC = () => {
   const HeaderBar = styled.header({
@@ -21,10 +21,11 @@ const Header: React.FC = () => {
       <Logo href={siteUrl}>
         <a>
           <Image
+            // TODO: Contentful から取得する
             src="/images/logo.png"
             width="650px"
             height="120px"
-            alt="Tech Blog"
+            alt={siteTitle}
             objectFit="cover"
           />
         </a>

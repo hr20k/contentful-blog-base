@@ -2,7 +2,6 @@ import {ParsedUrlQuery} from 'querystring';
 
 import {documentToReactComponents, Options} from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document} from '@contentful/rich-text-types';
-import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
 import {format} from 'date-fns';
@@ -20,7 +19,7 @@ import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {Header} from '@/components/molecules/Header';
 import {Share} from '@/components/molecules/Share';
-import {siteTitle} from '@/constants';
+import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
@@ -110,7 +109,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
     });
 
     const categoryEntries = await client.getEntries<CategoryModel>({
-      content_type: 'category',
+      content_type: ContentType.Category,
       order: 'fields.order',
     });
 
@@ -120,9 +119,9 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
     );
 
     const entry = await client.getEntries<TechBlogModel>({
-      content_type: 'techBlog',
+      content_type: ContentType.Article,
       'fields.slug': params.path,
-      'fields.category.sys.contentType.sys.id': 'category',
+      'fields.category.sys.contentType.sys.id': ContentType.Category,
       'fields.category.fields.slug': params.category,
       limit: 1,
     });
@@ -151,7 +150,7 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
     accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
   });
   const entries = await client.getEntries<TechBlogModel>({
-    content_type: 'techBlog',
+    content_type: ContentType.Article,
   });
   const paths = entries.items.map((item) => ({
     params: {
