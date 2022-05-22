@@ -13,7 +13,7 @@ import {
 import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
-import {Header} from '@/components/molecules/Header';
+import {NavHeader} from '@/components/molecules/NavHeader';
 import {ContentType} from '@/constants';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
@@ -123,7 +123,10 @@ const Home: React.FC<Props> = ({links, categories}) => {
     <>
       <Seo />
       <main>
-        <Header />
+        <NavHeader
+          items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
+          currentTab="/"
+        />
         <Box
           sx={{
             width: matches ? '900px' : 'auto',

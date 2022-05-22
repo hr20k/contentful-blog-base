@@ -17,7 +17,7 @@ import {
 import {Seo} from '@/components/atoms/Seo';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
-import {Header} from '@/components/molecules/Header';
+import {NavHeader} from '@/components/molecules/NavHeader';
 import {Share} from '@/components/molecules/Share';
 import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
@@ -225,7 +225,10 @@ const Article: React.FC<Props> = ({
     <>
       <Seo title={title} />
       <main>
-        <Header />
+        <NavHeader
+          items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
+          currentTab={path}
+        />
         <Box
           component="article"
           sx={{

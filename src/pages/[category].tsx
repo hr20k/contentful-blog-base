@@ -16,7 +16,7 @@ import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
-import {Header} from '@/components/molecules/Header';
+import {NavHeader} from '@/components/molecules/NavHeader';
 import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
@@ -39,6 +39,7 @@ interface CategoryContainerProps {
 }
 
 interface CategoryProps {
+  path: string;
   categoryTitle: string;
   breadCrumbs: Array<BreadCrumbsModel>;
   categories: Array<CategoryLink>;
@@ -127,6 +128,7 @@ const CategoryContainer: React.FC<ContainerProps> = ({
 
   return (
     <Category
+      path={`/${category.fields.slug}`}
       categoryTitle={categoryTitle}
       breadCrumbs={breadCrumbs}
       categories={categoryLinks}
@@ -186,14 +188,17 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
   };
 };
 
-const Category: React.FC<Props> = ({categoryTitle, breadCrumbs, links, categories}) => {
+const Category: React.FC<Props> = ({path, categoryTitle, breadCrumbs, links, categories}) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
     <>
       <Seo title={categoryTitle} />
       <main>
-        <Header />
+        <NavHeader
+          items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
+          currentTab={path}
+        />
         <Box
           sx={{
             width: matches ? '900px' : 'auto',
