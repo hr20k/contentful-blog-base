@@ -5,20 +5,20 @@ import {LinkTab, LinkTabProps} from '@/components/atoms/LinkTab';
 
 interface NavTabsProps {
   items: Array<LinkTabProps>;
-  currentTab: string;
+  currentPath: string;
 }
 
 type Props = NavTabsProps;
 
-const NavTabs: VFC<Props> = ({items, currentTab}) => {
+const NavTabs: VFC<Props> = ({items, currentPath}) => {
   const index = useMemo(
     () =>
-      currentTab === '/'
+      currentPath === '/'
         ? 0
-        : items.findIndex(({href}) => href === currentTab) !== -1
-        ? items.findIndex(({href}) => href === currentTab) + 1
-        : -1,
-    [items, currentTab]
+        : items.findIndex(({href}) => new RegExp(`^${href}(\/.*)?$`).test(currentPath)) !== -1
+        ? items.findIndex(({href}) => new RegExp(`^${href}(\/.*)?$`).test(currentPath)) + 1
+        : undefined,
+    [items, currentPath]
   );
 
   return (

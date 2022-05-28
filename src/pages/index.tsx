@@ -125,7 +125,7 @@ const Home: React.FC<Props> = ({links, categories}) => {
       <main>
         <NavHeader
           items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
-          currentTab="/"
+          currentPath="/"
         />
         <Box
           sx={{

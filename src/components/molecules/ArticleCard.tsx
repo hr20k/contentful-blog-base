@@ -62,8 +62,8 @@ const ArticleCard: React.FC<Props> = ({href, imageSrc, title, date, contents}) =
                 sx={{
                   marginTop: '1rem',
                   display: '-webkit-box',
-                  ['-webkit-box-orient']: 'vertical',
-                  ['-webkit-line-clamp']: '3',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: '3',
                   overflow: 'hidden',
                 }}
               >

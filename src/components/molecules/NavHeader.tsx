@@ -7,11 +7,11 @@ type NavHeaderProps = NavTabsProps;
 
 type Props = NavHeaderProps;
 
-const NavHeader: VFC<Props> = ({items, currentTab}) => {
+const NavHeader: VFC<Props> = ({items, currentPath}) => {
   return (
     <>
       <Header />
-      <NavTabs items={items} currentTab={currentTab} />
+      <NavTabs items={items} currentPath={currentPath} />
     </>
   );
 };

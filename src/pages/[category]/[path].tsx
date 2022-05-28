@@ -130,7 +130,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
     if (typeof item !== 'undefined' && typeof currentCategory !== 'undefined') {
       return {
         props: {
-          path: params.path,
+          path: `/${params.category}/${params.path}`,
           category: currentCategory,
           withLinksCountCategories: Linkscount,
           article: item,
@@ -227,7 +227,7 @@ const Article: React.FC<Props> = ({
       <main>
         <NavHeader
           items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
-          currentTab={path}
+          currentPath={path}
         />
         <Box
           component="article"

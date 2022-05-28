@@ -111,7 +111,7 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     [withLinksCountCategories]
   );
 
-  const categoryTitle = React.useMemo(() => category.fields.name, []);
+  const categoryTitle = React.useMemo(() => category.fields.name, [category.fields.name]);
 
   const breadCrumbs: Array<BreadCrumbsModel> = React.useMemo(() => {
     return [
@@ -124,7 +124,7 @@ const CategoryContainer: React.FC<ContainerProps> = ({
         displayName: categoryTitle,
       },
     ];
-  }, []);
+  }, [category.fields.slug, categoryTitle]);
 
   return (
     <Category
@@ -197,7 +197,7 @@ const Category: React.FC<Props> = ({path, categoryTitle, breadCrumbs, links, cat
       <main>
         <NavHeader
           items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
-          currentTab={path}
+          currentPath={path}
         />
         <Box
           sx={{

@@ -1,4 +1,4 @@
-import {List, ListItem, Typography} from '@mui/material';
+import {List, ListItem, Typography, Link as MuiLink} from '@mui/material';
 import Link from 'next/link';
 import * as React from 'react';
 
@@ -24,8 +24,8 @@ const CategoryLinkList: React.FC<Props> = ({categories}) => {
               paddingLeft: '0px',
             }}
           >
-            <Link href={path}>
-              <a>{`${title} (${count})`}</a>
+            <Link href={path} passHref>
+              <MuiLink>{`${title} (${count})`}</MuiLink>
             </Link>
           </ListItem>
         ))}
