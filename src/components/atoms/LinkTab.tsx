@@ -1,6 +1,9 @@
 import {Tab} from '@mui/material';
 import Link from 'next/link';
-import {VFC} from 'react';
+import {useCallback, VFC} from 'react';
+
+import {gaEvent} from '@/libs/gtag';
+import {GAAction, GACategory} from '@/types/googleAnalytics/event';
 
 interface LinkTabProps {
   id: string;
@@ -11,6 +14,13 @@ interface LinkTabProps {
 type Props = LinkTabProps;
 
 const LinkTab: VFC<Props> = ({id, label, href}) => {
+  const handleClick = useCallback(() => {
+    gaEvent({
+      action: GAAction.Click,
+      category: GACategory.Link,
+    });
+  }, []);
+
   return (
     <Link href={href} passHref>
       <Tab
@@ -18,6 +28,7 @@ const LinkTab: VFC<Props> = ({id, label, href}) => {
         id={id}
         label={label}
         value={href}
+        onClick={handleClick}
         sx={{
           fontWeight: 'bold',
         }}

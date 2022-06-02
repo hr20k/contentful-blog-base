@@ -2,10 +2,12 @@ import {CacheProvider, EmotionCache} from '@emotion/react';
 import {CssBaseline, ThemeProvider} from '@mui/material';
 import {DefaultSeo} from 'next-seo';
 import Head from 'next/head';
-import * as React from 'react';
+import {useEffect} from 'react';
 
-import {siteTitle, siteUrl} from '@/constants';
+import {siteDescription, siteTitle, siteUrl} from '@/constants';
 import {createEmotionCache} from '@/createEmotionCache';
+import {usePageView} from '@/hooks/usePageView';
+import {existsGaId, GA_ID} from '@/libs/gtag';
 import {theme} from '@/styles/theme/theme';
 
 import type {AppProps} from 'next/app';
@@ -21,7 +23,9 @@ const App: React.FC<MyAppProps> = ({
   emotionCache = clientSideEmotionCache,
   pageProps,
 }) => {
-  React.useEffect(() => {
+  usePageView();
+
+  useEffect(() => {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
     jssStyles?.parentElement?.removeChild(jssStyles);
@@ -32,11 +36,28 @@ const App: React.FC<MyAppProps> = ({
       <Head>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
         <link rel="icon" href="/favicon.ico" />
+        {/* Google Analytics */}
+        {existsGaId && (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${GA_ID}', {
+                    page_path: window.location.pathname,
+                  });`,
+              }}
+            />
+          </>
+        )}
       </Head>
       <DefaultSeo
         titleTemplate={`%s | ${siteTitle}`}
         defaultTitle={siteTitle}
-        description="フロントエンドの技術的なことを書くブログです"
+        description={siteDescription}
         additionalMetaTags={[
           {
             property: 'dc:creator',

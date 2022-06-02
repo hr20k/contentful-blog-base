@@ -1,16 +1,25 @@
 import {List, ListItem, Typography, Link as MuiLink} from '@mui/material';
 import Link from 'next/link';
-import * as React from 'react';
+import {FC, useCallback} from 'react';
 
+import {gaEvent} from '@/libs/gtag';
 import {CategoryLink} from '@/libs/models/CategoryLink';
+import {GAAction, GACategory} from '@/types/googleAnalytics/event';
 
-interface CategotyLinkListProps {
+interface CategoryLinkListProps {
   categories: Array<CategoryLink>;
 }
 
-type Props = CategotyLinkListProps;
+type Props = CategoryLinkListProps;
 
-const CategoryLinkList: React.FC<Props> = ({categories}) => {
+const CategoryLinkList: FC<Props> = ({categories}) => {
+  const handleClick = useCallback(() => {
+    gaEvent({
+      action: GAAction.Click,
+      category: GACategory.Link,
+    });
+  }, []);
+
   return (
     <>
       <Typography variant="h3" sx={{color: '#fffffe'}}>
@@ -25,7 +34,7 @@ const CategoryLinkList: React.FC<Props> = ({categories}) => {
             }}
           >
             <Link href={path} passHref>
-              <MuiLink>{`${title} (${count})`}</MuiLink>
+              <MuiLink onClick={handleClick}>{`${title} (${count})`}</MuiLink>
             </Link>
           </ListItem>
         ))}
@@ -34,5 +43,5 @@ const CategoryLinkList: React.FC<Props> = ({categories}) => {
   );
 };
 
-export type {CategotyLinkListProps};
+export type {CategoryLinkListProps};
 export {CategoryLinkList};

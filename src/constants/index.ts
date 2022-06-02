@@ -2,6 +2,8 @@ const siteUrl = process.env.NEXT_PUBLIC_BLOG_URL ?? '';
 
 const siteTitle = process.env.NEXT_PUBLIC_BLOG_TITLE ?? 'My Blog';
 
+const siteDescription = process.env.NEXT_PUBLIC_BLOG_DESCRIPTION ?? '';
+
 const ContentType = {
   Article: 'article',
   Category: 'category',
@@ -9,4 +11,4 @@ const ContentType = {
 
 type ContentType = typeof ContentType[keyof typeof ContentType];
 
-export {siteUrl, siteTitle, ContentType};
+export {siteUrl, siteTitle, siteDescription, ContentType};
