@@ -74,6 +74,13 @@ class MyDocument extends Document {
             href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
           />
           <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${
+              process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT ?? ''
+            }`}
+            crossOrigin="anonymous"
+          ></script>
         </Head>
         <body>
           <Main />
