@@ -39,6 +39,15 @@ const Text = styled.p({
 
 const YouTubeEmbed = styled.div({
   margin: '24px 0',
+  position: 'relative',
+  width: '100%',
+  paddingTop: '56.25%',
+  ['& iframe']: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    height: '100%',
+  },
 });
 
 interface Params extends ParsedUrlQuery {
