@@ -9,4 +9,5 @@ interface Window {
       value?: string;
     }
   );
+  adsbygoogle?: {[key: string]: unknown}[];
 }

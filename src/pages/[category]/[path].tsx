@@ -1,7 +1,9 @@
+import {createHash} from 'crypto';
 import {ParsedUrlQuery} from 'querystring';
 
 import {documentToReactComponents, Options} from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document} from '@contentful/rich-text-types';
+import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
 import {format} from 'date-fns';
@@ -19,11 +21,20 @@ import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {NavHeader} from '@/components/molecules/NavHeader';
 import {Share} from '@/components/molecules/Share';
+import {TableOfContents} from '@/components/molecules/TableOfContents';
 import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
 import {withLinksCountToCategory} from '@/utils';
+
+const Toc = styled.div({
+  margin: '48px 0',
+});
+
+const Text = styled.p({
+  lineHeight: '2',
+});
 
 interface Params extends ParsedUrlQuery {
   category: string;
@@ -180,6 +191,53 @@ const Article: React.FC<Props> = ({
 
   const options: Options = {
     renderNode: {
+      [BLOCKS.HEADING_2]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          const anchor = createHash('md5').update(content.value).digest('hex');
+          return (
+            <Typography id={anchor} variant="h2" sx={{marginTop: '32px', marginBottom: '16px'}}>
+              {children}
+            </Typography>
+          );
+        }
+        return children;
+      },
+      [BLOCKS.HEADING_3]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          return (
+            <Typography
+              variant="h3"
+              sx={{borderBottom: 'solid 2px', lineHeight: 2, fontWeight: '500'}}
+            >
+              {children}
+            </Typography>
+          );
+        }
+        return children;
+      },
+      [BLOCKS.HEADING_4]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          return <Typography variant="h4">{children}</Typography>;
+        }
+        return children;
+      },
+      [BLOCKS.HEADING_5]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          return <Typography variant="h5">{children}</Typography>;
+        }
+        return children;
+      },
+      [BLOCKS.HEADING_6]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          return <Typography variant="h6">{children}</Typography>;
+        }
+        return children;
+      },
       [BLOCKS.PARAGRAPH]: (node, children) => {
         const content = node.content.slice(0, 1).shift();
         if (
@@ -194,6 +252,9 @@ const Article: React.FC<Props> = ({
               </pre>
             </div>
           );
+        }
+        if (content?.nodeType === 'text') {
+          return <Text>{children}</Text>;
         }
         return <p>{children}</p>;
       },
@@ -254,12 +315,15 @@ const Article: React.FC<Props> = ({
               <Typography
                 variant="h1"
                 sx={{
-                  margin: '8px 0',
+                  margin: '16px 0 8px',
                 }}
               >
                 {title}
               </Typography>
               <Typography variant="caption">{date}</Typography>
+              <Toc>
+                <TableOfContents contents={contents} />
+              </Toc>
               <div>{contents !== null ? documentToReactComponents(contents, options) : null}</div>
               <Share path={path} title={title} />
             </Grid>
