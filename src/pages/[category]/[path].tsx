@@ -2,7 +2,7 @@ import {createHash} from 'crypto';
 import {ParsedUrlQuery} from 'querystring';
 
 import {documentToReactComponents, Options} from '@contentful/rich-text-react-renderer';
-import {BLOCKS, Document} from '@contentful/rich-text-types';
+import {BLOCKS, Document, INLINES} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
@@ -10,6 +10,7 @@ import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import Image from 'next/image';
 import * as React from 'react';
+import YouTube from 'react-youtube';
 
 import {
   CategoryModel,
@@ -34,6 +35,10 @@ const Toc = styled.div({
 
 const Text = styled.p({
   lineHeight: '2',
+});
+
+const YouTubeEmbed = styled.div({
+  margin: '24px 0',
 });
 
 interface Params extends ParsedUrlQuery {
@@ -279,6 +284,27 @@ const Article: React.FC<Props> = ({
             ) : null}
           </Box>
         );
+      },
+      [INLINES.HYPERLINK]: (node, children) => {
+        const youtubeRe = /\/youtu.be\/(.+)$/;
+        const matched = node.data.uri.match(youtubeRe);
+
+        if (Array.isArray(matched) && matched.length >= 2) {
+          return (
+            <YouTubeEmbed>
+              <YouTube videoId={matched[1]} />
+            </YouTubeEmbed>
+          );
+        }
+
+        if (
+          node.nodeType === INLINES.HYPERLINK &&
+          'uri' in node.data &&
+          typeof node.data.uri === 'string'
+        ) {
+          return <a href={node.data.uri}>{node.data.uri}</a>;
+        }
+        return children;
       },
     },
   };
