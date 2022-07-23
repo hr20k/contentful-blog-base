@@ -58,15 +58,15 @@ const TableOfContents: FC<Props> = ({contents}) => {
     },
   };
 
-  return (
+  return document !== null && document.content.length > 0 ? (
     <Nav>
       <Typography sx={{fontWeight: 'bold', display: 'flex'}}>
         <ArrowDropDown />
         目次
       </Typography>
-      <List>{document !== null ? documentToReactComponents(document, options) : null}</List>
+      <List>{documentToReactComponents(document, options)}</List>
     </Nav>
-  );
+  ) : null;
 };
 
 export {TableOfContents};

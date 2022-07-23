@@ -85,6 +85,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
         displayName: article.fields.title,
       },
     ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const categoryLinks = React.useMemo(
