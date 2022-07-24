@@ -22,7 +22,7 @@ interface ShareProps {
 type Props = ShareProps;
 
 const Share: React.FC<Props> = ({path = '', title}) => {
-  const url = `${siteUrl}/${path}`;
+  const url = `${siteUrl}${path}`;
   const displayTitle = typeof title !== 'undefined' ? `${title} | ${siteTitle}` : siteTitle;
 
   const ShareButton = styled(Box)({
