@@ -221,11 +221,9 @@ const Article: React.FC<Props> = ({
       [BLOCKS.HEADING_3]: (node, children) => {
         const content = node.content.slice(0, 1).shift();
         if (content?.nodeType === 'text') {
+          const anchor = createHash('md5').update(content.value).digest('hex');
           return (
-            <Typography
-              variant="h3"
-              sx={{borderBottom: 'solid 2px', lineHeight: 2, fontWeight: '500'}}
-            >
+            <Typography id={anchor} variant="h3" sx={{borderBottom: 'solid 2px', lineHeight: 2}}>
               {children}
             </Typography>
           );
@@ -235,21 +233,36 @@ const Article: React.FC<Props> = ({
       [BLOCKS.HEADING_4]: (node, children) => {
         const content = node.content.slice(0, 1).shift();
         if (content?.nodeType === 'text') {
-          return <Typography variant="h4">{children}</Typography>;
+          const anchor = createHash('md5').update(content.value).digest('hex');
+          return (
+            <Typography id={anchor} variant="h4">
+              {children}
+            </Typography>
+          );
         }
         return children;
       },
       [BLOCKS.HEADING_5]: (node, children) => {
         const content = node.content.slice(0, 1).shift();
         if (content?.nodeType === 'text') {
-          return <Typography variant="h5">{children}</Typography>;
+          const anchor = createHash('md5').update(content.value).digest('hex');
+          return (
+            <Typography id={anchor} variant="h5">
+              {children}
+            </Typography>
+          );
         }
         return children;
       },
       [BLOCKS.HEADING_6]: (node, children) => {
         const content = node.content.slice(0, 1).shift();
         if (content?.nodeType === 'text') {
-          return <Typography variant="h6">{children}</Typography>;
+          const anchor = createHash('md5').update(content.value).digest('hex');
+          return (
+            <Typography id={anchor} variant="h6">
+              {children}
+            </Typography>
+          );
         }
         return children;
       },

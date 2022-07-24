@@ -1,7 +1,9 @@
 import {grey} from '@mui/material/colors';
 import {createTheme} from '@mui/material/styles';
+import {Shadows} from '@mui/material/styles/shadows';
 
 const theme = createTheme({
+  shadows: Array(25).fill('none') as Shadows,
   palette: {
     primary: {
       main: '#3da9fc',
@@ -38,22 +40,22 @@ const theme = createTheme({
     },
     h3: {
       fontSize: '1.5rem',
-      fontWeight: 700,
+      fontWeight: 500,
       color: '#094067',
     },
     h4: {
       fontSize: '1.2rem',
-      fontWeight: 700,
+      fontWeight: 500,
       color: '#094067',
     },
     h5: {
       fontSize: '1.2rem',
-      fontWeight: 700,
+      fontWeight: 500,
       color: '#094067',
     },
     h6: {
       fontSize: '1.2rem',
-      fontWeight: 700,
+      fontWeight: 500,
       color: '#094067',
     },
     subtitle1: {

@@ -3,18 +3,27 @@ import {createHash} from 'crypto';
 import {documentToReactComponents, Options} from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
-import {ArrowDropDown} from '@mui/icons-material';
-import {List, ListItem, Typography} from '@mui/material';
-import {FC, useMemo} from 'react';
+import {ArrowDropDown, ArrowDropUp} from '@mui/icons-material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from '@mui/material';
+import {FC, useCallback, useMemo, useState} from 'react';
 import {Link} from 'react-scroll';
 
-const headingTypes = [BLOCKS.HEADING_2];
-
-const Nav = styled.nav({
-  padding: '16px',
-  backgroundColor: '#f0f0f0',
-  borderRadius: '8px',
-});
+const headingTypes = [
+  BLOCKS.HEADING_2,
+  BLOCKS.HEADING_3,
+  BLOCKS.HEADING_4,
+  BLOCKS.HEADING_5,
+  BLOCKS.HEADING_6,
+];
 
 const ScrollLink = styled(Link)({
   width: '100%',
@@ -28,6 +37,8 @@ interface TableOfContentsProps {
 type Props = TableOfContentsProps;
 
 const TableOfContents: FC<Props> = ({contents}) => {
+  const [tocExpanded, setTocExpanded] = useState(true);
+
   const document = useMemo(
     () =>
       contents !== null
@@ -48,7 +59,69 @@ const TableOfContents: FC<Props> = ({contents}) => {
           return (
             <ListItem button divider sx={{padding: 0}}>
               <ScrollLink to={anchor} activeClass="active" smooth={true} duration={500}>
-                {children}
+                <ListItemText>{children}</ListItemText>
+              </ScrollLink>
+            </ListItem>
+          );
+        }
+        return null;
+      },
+      [BLOCKS.HEADING_3]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          const anchor = createHash('md5').update(content.value).digest('hex');
+          return (
+            <ListItem button divider sx={{padding: '0 0 0 16px'}}>
+              <ScrollLink to={anchor} activeClass="active" smooth={true} duration={500}>
+                <ListItemText>{children}</ListItemText>
+              </ScrollLink>
+            </ListItem>
+          );
+        }
+        return null;
+      },
+      [BLOCKS.HEADING_4]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          const anchor = createHash('md5').update(content.value).digest('hex');
+          return (
+            <ListItem button divider sx={{padding: '0 0 0 16px'}}>
+              <ScrollLink to={anchor} activeClass="active" smooth={true} duration={500}>
+                <ListItemText primaryTypographyProps={{sx: {fontSize: '0.8rem'}}}>
+                  {children}
+                </ListItemText>
+              </ScrollLink>
+            </ListItem>
+          );
+        }
+        return null;
+      },
+      [BLOCKS.HEADING_5]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          const anchor = createHash('md5').update(content.value).digest('hex');
+          return (
+            <ListItem button divider sx={{padding: '0 0 0 16px'}}>
+              <ScrollLink to={anchor} activeClass="active" smooth={true} duration={500}>
+                <ListItemText primaryTypographyProps={{sx: {fontSize: '0.8rem'}}}>
+                  {children}
+                </ListItemText>
+              </ScrollLink>
+            </ListItem>
+          );
+        }
+        return null;
+      },
+      [BLOCKS.HEADING_6]: (node, children) => {
+        const content = node.content.slice(0, 1).shift();
+        if (content?.nodeType === 'text') {
+          const anchor = createHash('md5').update(content.value).digest('hex');
+          return (
+            <ListItem button divider sx={{padding: '0 0 0 16px'}}>
+              <ScrollLink to={anchor} activeClass="active" smooth={true} duration={500}>
+                <ListItemText primaryTypographyProps={{sx: {fontSize: '0.8rem'}}}>
+                  {children}
+                </ListItemText>
               </ScrollLink>
             </ListItem>
           );
@@ -58,14 +131,26 @@ const TableOfContents: FC<Props> = ({contents}) => {
     },
   };
 
+  const handleClickToc = useCallback(() => setTocExpanded((prev) => !prev), []);
+
   return document !== null && document.content.length > 0 ? (
-    <Nav>
-      <Typography sx={{fontWeight: 'bold', display: 'flex'}}>
-        <ArrowDropDown />
-        目次
-      </Typography>
-      <List>{documentToReactComponents(document, options)}</List>
-    </Nav>
+    <nav>
+      <Accordion
+        expanded={tocExpanded}
+        disableGutters
+        onChange={handleClickToc}
+        sx={{backgroundColor: '#f0f0f0'}}
+      >
+        <AccordionSummary>
+          <Typography sx={{fontWeight: 'bold', display: 'flex'}}>
+            {tocExpanded ? <ArrowDropDown /> : <ArrowDropUp />}目次
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <List>{documentToReactComponents(document, options)}</List>
+        </AccordionDetails>
+      </Accordion>
+    </nav>
   ) : null;
 };
 
