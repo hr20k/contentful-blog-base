@@ -31,7 +31,7 @@ const Header: FC = () => {
         <a onClick={handleClick}>
           <Image
             // TODO: Contentful から取得する
-            src="/images/logo.png"
+            src="/images/logo.webp"
             width="650px"
             height="120px"
             alt={siteTitle}

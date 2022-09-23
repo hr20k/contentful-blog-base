@@ -42,7 +42,7 @@ const ArticleCard: React.FC<Props> = ({href, imageSrc, title, date, contents}) =
             <Box>
               <Img
                 // TODO: Contentful から取得する
-                src={imageSrc ?? '/images/home.png'}
+                src={imageSrc ?? '/images/home.webp'}
                 alt={title}
                 width="100%"
                 height={matches ? '320px' : 'calc((100vw - 32px) * (320 / 640))'}
