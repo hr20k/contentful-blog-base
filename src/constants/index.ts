@@ -7,6 +7,7 @@ const siteDescription = process.env.NEXT_PUBLIC_BLOG_DESCRIPTION ?? '';
 const ContentType = {
   Article: 'article',
   Category: 'category',
+  PrivacyPolicy: 'privacyPolicy',
 } as const;
 
 type ContentType = typeof ContentType[keyof typeof ContentType];

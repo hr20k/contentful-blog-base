@@ -12,11 +12,8 @@ import Image from 'next/image';
 import * as React from 'react';
 import YouTube from 'react-youtube';
 
-import {
-  CategoryModel,
-  TechBlogModel,
-  WithLinksCountCategory,
-} from '@/api/contentful/models/techBlog';
+import {CategoryModel, ArticleModel, WithLinksCountCategory} from '@/api/contentful/models/blog';
+import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
@@ -58,7 +55,7 @@ interface Params extends ParsedUrlQuery {
 interface ArticleContainerProps {
   path: string;
   category: contentful.Entry<CategoryModel>;
-  article: contentful.Entry<TechBlogModel>;
+  article: contentful.Entry<ArticleModel>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
 }
 
@@ -139,12 +136,12 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
       order: 'fields.order',
     });
 
-    const Linkscount = await withLinksCountToCategory(categoryEntries);
+    const LinksCount = await withLinksCountToCategory(categoryEntries);
     const currentCategory = categoryEntries.items.find(
       ({fields}) => fields.slug === params.category
     );
 
-    const entry = await client.getEntries<TechBlogModel>({
+    const entry = await client.getEntries<ArticleModel>({
       content_type: ContentType.Article,
       'fields.slug': params.path,
       'fields.category.sys.contentType.sys.id': ContentType.Category,
@@ -158,7 +155,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
         props: {
           path: `/${params.category}/${params.path}`,
           category: currentCategory,
-          withLinksCountCategories: Linkscount,
+          withLinksCountCategories: LinksCount,
           article: item,
         },
       };
@@ -175,7 +172,7 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
     space: process.env.CONTENTFUL_SPACE_ID ?? '',
     accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
   });
-  const entries = await client.getEntries<TechBlogModel>({
+  const entries = await client.getEntries<ArticleModel>({
     content_type: ContentType.Article,
   });
   const paths = entries.items.map((item) => ({
@@ -385,6 +382,14 @@ const Article: React.FC<Props> = ({
                 }}
               >
                 <CategoryLinkList categories={categories} />
+              </Box>
+              <Box
+                sx={{
+                  marginTop: '16px',
+                  fontSize: '0.875rem',
+                }}
+              >
+                <PrivacyPolicyLink />
               </Box>
             </Grid>
           </Grid>

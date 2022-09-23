@@ -1,7 +1,7 @@
 import {Document} from '@contentful/rich-text-types';
 import {Asset, Entry, EntryFields} from 'contentful';
 
-interface TechBlogModel {
+interface ArticleModel {
   slug: EntryFields.Text;
   title: EntryFields.Text;
   category: Entry<CategoryModel>;
@@ -15,9 +15,13 @@ interface CategoryModel {
   order?: number;
 }
 
+interface PrivacyPolicyModel {
+  contents: Document | null;
+}
+
 interface WithLinksCountCategory {
   category: Entry<CategoryModel>;
   count: number;
 }
 
-export type {TechBlogModel, CategoryModel, WithLinksCountCategory};
+export type {ArticleModel, CategoryModel, PrivacyPolicyModel, WithLinksCountCategory};

@@ -7,11 +7,8 @@ import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import * as React from 'react';
 
-import {
-  CategoryModel,
-  TechBlogModel,
-  WithLinksCountCategory,
-} from '@/api/contentful/models/techBlog';
+import {CategoryModel, ArticleModel, WithLinksCountCategory} from '@/api/contentful/models/blog';
+import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
@@ -35,7 +32,7 @@ interface Params extends ParsedUrlQuery {
 interface CategoryContainerProps {
   category: Entry<CategoryModel>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
-  articles: Array<Entry<TechBlogModel>>;
+  articles: Array<Entry<ArticleModel>>;
 }
 
 interface CategoryProps {
@@ -148,11 +145,11 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
     content_type: ContentType.Category,
     order: 'fields.order',
   });
-  const Linkscount = await withLinksCountToCategory(categoryEntries);
+  const LinksCount = await withLinksCountToCategory(categoryEntries);
   const currentCategory = categoryEntries.items.find(({fields}) => fields.slug === params.category);
 
   if (typeof currentCategory !== 'undefined') {
-    const entry = await client.getEntries<TechBlogModel>({
+    const entry = await client.getEntries<ArticleModel>({
       content_type: ContentType.Article,
       'fields.category.sys.contentType.sys.id': ContentType.Category,
       'fields.category.fields.slug': params.category,
@@ -161,7 +158,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
     return {
       props: {
         category: currentCategory,
-        withLinksCountCategories: Linkscount,
+        withLinksCountCategories: LinksCount,
         articles: entry.items,
       },
     };
@@ -248,6 +245,14 @@ const Category: React.FC<Props> = ({path, categoryTitle, breadCrumbs, links, cat
                 }}
               >
                 <CategoryLinkList categories={categories} />
+              </Box>
+              <Box
+                sx={{
+                  marginTop: '16px',
+                  fontSize: '0.875rem',
+                }}
+              >
+                <PrivacyPolicyLink />
               </Box>
             </Grid>
           </Grid>

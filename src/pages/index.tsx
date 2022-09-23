@@ -1,15 +1,13 @@
 import {Block, Document, Inline} from '@contentful/rich-text-types';
-import {Box, Grid, useMediaQuery} from '@mui/material';
+import {Box, Grid, useMediaQuery, Link as MuiLink} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticProps} from 'next';
+import Link from 'next/link';
 import * as React from 'react';
 
-import {
-  CategoryModel,
-  TechBlogModel,
-  WithLinksCountCategory,
-} from '@/api/contentful/models/techBlog';
+import {CategoryModel, ArticleModel, WithLinksCountCategory} from '@/api/contentful/models/blog';
+import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
@@ -21,7 +19,7 @@ import {withLinksCountToCategory} from '@/utils';
 
 interface HomeContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
-  articles: Array<Entry<TechBlogModel>>;
+  articles: Array<Entry<ArticleModel>>;
 }
 
 interface HomeProps {
@@ -99,7 +97,7 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
     accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
   });
 
-  const entry = await client.getEntries<TechBlogModel>({
+  const entry = await client.getEntries<ArticleModel>({
     content_type: ContentType.Article,
   });
   const categoryEntries = await client.getEntries<CategoryModel>({
@@ -165,6 +163,14 @@ const Home: React.FC<Props> = ({links, categories}) => {
                 }}
               >
                 <CategoryLinkList categories={categories} />
+              </Box>
+              <Box
+                sx={{
+                  marginTop: '16px',
+                  fontSize: '0.875rem',
+                }}
+              >
+                <PrivacyPolicyLink />
               </Box>
             </Grid>
           </Grid>
