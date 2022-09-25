@@ -7,6 +7,7 @@ import * as React from 'react';
 import {CategoryModel, ArticleModel, WithLinksCountCategory} from '@/api/contentful/models/blog';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
+import {Adsense} from '@/components/molecules/Adsense';
 import {CategoryCard} from '@/components/molecules/CategoryCard';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {NavHeader} from '@/components/molecules/NavHeader';
@@ -170,6 +171,7 @@ const Home: React.FC<Props> = ({links, categories}) => {
               >
                 <PrivacyPolicyLink />
               </Box>
+              <Adsense />
             </Grid>
           </Grid>
         </Box>
