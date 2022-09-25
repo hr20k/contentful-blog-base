@@ -1,13 +1,11 @@
 import {CacheProvider, EmotionCache} from '@emotion/react';
 import {CssBaseline, ThemeProvider} from '@mui/material';
 import {DefaultSeo} from 'next-seo';
-import Head from 'next/head';
 import {useEffect} from 'react';
 
 import {siteDescription, siteTitle, siteUrl} from '@/constants';
 import {createEmotionCache} from '@/createEmotionCache';
 import {usePageView} from '@/hooks/usePageView';
-import {existsGaId, GA_ID} from '@/libs/gtag';
 import {theme} from '@/styles/theme/theme';
 
 import type {AppProps} from 'next/app';
@@ -33,27 +31,6 @@ const App: React.FC<MyAppProps> = ({
 
   return (
     <>
-      <Head>
-        <meta name="viewport" content="initial-scale=1, width=device-width" />
-        <link rel="icon" href="/favicon.ico" />
-        {/* Google Analytics */}
-        {existsGaId && (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${GA_ID}', {
-                    page_path: window.location.pathname,
-                  });`,
-              }}
-            />
-          </>
-        )}
-      </Head>
       <DefaultSeo
         titleTemplate={`%s | ${siteTitle}`}
         defaultTitle={siteTitle}
