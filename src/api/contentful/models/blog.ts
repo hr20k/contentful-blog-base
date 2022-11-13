@@ -24,4 +24,11 @@ interface WithLinksCountCategory {
   count: number;
 }
 
-export type {ArticleModel, CategoryModel, PrivacyPolicyModel, WithLinksCountCategory};
+interface SettingModel {
+  title: string;
+  description: string;
+  logo: Asset;
+  defaultThumbnail: Asset;
+}
+
+export type {ArticleModel, CategoryModel, PrivacyPolicyModel, WithLinksCountCategory, SettingModel};

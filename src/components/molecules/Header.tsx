@@ -1,18 +1,25 @@
 import styled from '@emotion/styled';
 import Image from 'next/image';
 import Link from 'next/link';
-import {FC, useCallback} from 'react';
+import {useCallback, VFC} from 'react';
 
 import {siteTitle, siteUrl} from '@/constants';
 import {gaEvent} from '@/libs/gtag';
+import {palette} from '@/styles/theme/theme';
 import {GAAction, GACategory} from '@/types/googleAnalytics/event';
 
-const Header: FC = () => {
+interface HeaderProps {
+  logoUrl?: string;
+}
+
+type Props = HeaderProps;
+
+const Header: VFC<Props> = ({logoUrl}) => {
   const HeaderBar = styled.header({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#d8eefe',
+    backgroundColor: palette.headerBackgroundColor,
     height: '200px',
   });
 
@@ -30,8 +37,7 @@ const Header: FC = () => {
       <Logo href={siteUrl} passHref>
         <a onClick={handleClick}>
           <Image
-            // TODO: Contentful から取得する
-            src="/images/logo.webp"
+            src={logoUrl ?? '/images/logo.webp'}
             width="650px"
             height="120px"
             alt={siteTitle}
@@ -43,4 +49,5 @@ const Header: FC = () => {
   );
 };
 
+export type {HeaderProps};
 export {Header};

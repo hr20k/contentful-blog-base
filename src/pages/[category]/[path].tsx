@@ -5,14 +5,19 @@ import {documentToReactComponents, Options} from '@contentful/rich-text-react-re
 import {BLOCKS, Document, INLINES} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
-import * as contentful from 'contentful';
+import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import Image from 'next/image';
 import * as React from 'react';
 import YouTube from 'react-youtube';
 
-import {CategoryModel, ArticleModel, WithLinksCountCategory} from '@/api/contentful/models/blog';
+import {
+  CategoryModel,
+  ArticleModel,
+  WithLinksCountCategory,
+  SettingModel,
+} from '@/api/contentful/models/blog';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
@@ -54,9 +59,10 @@ interface Params extends ParsedUrlQuery {
 
 interface ArticleContainerProps {
   path: string;
-  category: contentful.Entry<CategoryModel>;
-  article: contentful.Entry<ArticleModel>;
+  category: Entry<CategoryModel>;
+  article: Entry<ArticleModel>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
+  blogSetting: Entry<SettingModel> | undefined;
 }
 
 interface ArticleProps {
@@ -69,6 +75,9 @@ interface ArticleProps {
   imageHeight?: number;
   contents: Document | null;
   categories: Array<CategoryLink>;
+  setting: {
+    logoUrl?: string;
+  };
 }
 
 type ContainerProps = ArticleContainerProps;
@@ -80,6 +89,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
   category,
   article,
   withLinksCountCategories,
+  blogSetting,
 }: ContainerProps) => {
   const breadCrumbs: Array<BreadCrumbsModel> = React.useMemo(() => {
     return [
@@ -120,16 +130,27 @@ const ArticleContainer: React.FC<ContainerProps> = ({
       imageHeight={article.fields.thumbnail?.fields.file.details.image?.height}
       contents={article.fields.contents}
       categories={categoryLinks}
+      setting={{
+        logoUrl:
+          typeof blogSetting !== 'undefined'
+            ? `https:${blogSetting.fields.logo.fields.file.url}`
+            : undefined,
+      }}
     />
   );
 };
 
 const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) => {
   if (params?.path) {
-    const client = contentful.createClient({
+    const client = createClient({
       space: process.env.CONTENTFUL_SPACE_ID ?? '',
       accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
     });
+
+    const settings = await client.getEntries<SettingModel>({
+      content_type: ContentType.Setting,
+    });
+    const blogSetting = settings.items.pop();
 
     const categoryEntries = await client.getEntries<CategoryModel>({
       content_type: ContentType.Category,
@@ -157,6 +178,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
           category: currentCategory,
           withLinksCountCategories: LinksCount,
           article: item,
+          blogSetting,
         },
       };
     }
@@ -168,7 +190,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
 };
 
 const getStaticPaths: GetStaticPaths<Params> = async () => {
-  const client = contentful.createClient({
+  const client = createClient({
     space: process.env.CONTENTFUL_SPACE_ID ?? '',
     accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
   });
@@ -198,6 +220,7 @@ const Article: React.FC<Props> = ({
   imageHeight,
   contents,
   categories,
+  setting,
 }: Props) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -335,6 +358,7 @@ const Article: React.FC<Props> = ({
         <NavHeader
           items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
           currentPath={path}
+          logoUrl={setting.logoUrl}
         />
         <Box
           component="article"
@@ -376,7 +400,7 @@ const Article: React.FC<Props> = ({
             <Grid item xs={12} sm={12} md={4}>
               <Box
                 sx={{
-                  backgroundColor: '#094067',
+                  backgroundColor: theme.palette.secondary.main,
                   borderRadius: '8px',
                   padding: '16px',
                 }}
