@@ -11,6 +11,7 @@ import {FC, useMemo} from 'react';
 import {
   CategoryModel,
   PrivacyPolicyModel,
+  SettingModel,
   WithLinksCountCategory,
 } from '@/api/contentful/models/blog';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
@@ -36,12 +37,16 @@ const client = createClient({
 interface PrivacyPolicyContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
   privacyPolicyDoc: Entry<PrivacyPolicyModel>;
+  blogSetting: Entry<SettingModel> | undefined;
 }
 
 interface PrivacyPolicyProps {
   breadCrumbs: Array<BreadCrumbsModel>;
   categories: Array<CategoryLink>;
   contents: Document | null;
+  setting: {
+    logoUrl?: string;
+  };
 }
 
 type ContainerProps = PrivacyPolicyContainerProps;
@@ -50,6 +55,7 @@ type Props = PrivacyPolicyProps;
 const PrivacyPolicyContainer: FC<ContainerProps> = ({
   withLinksCountCategories,
   privacyPolicyDoc,
+  blogSetting,
 }) => {
   const categoryLinks = useMemo(
     () =>
@@ -79,11 +85,22 @@ const PrivacyPolicyContainer: FC<ContainerProps> = ({
       categories={categoryLinks}
       breadCrumbs={breadCrumbs}
       contents={privacyPolicyDoc.fields.contents}
+      setting={{
+        logoUrl:
+          typeof blogSetting !== 'undefined'
+            ? `https:${blogSetting.fields.logo.fields.file.url}`
+            : undefined,
+      }}
     />
   );
 };
 
 const getStaticProps: GetStaticProps<ContainerProps> = async () => {
+  const settings = await client.getEntries<SettingModel>({
+    content_type: ContentType.Setting,
+  });
+  const blogSetting = settings.items.pop();
+
   const categoryEntries = await client.getEntries<CategoryModel>({
     content_type: ContentType.Category,
     order: 'fields.order',
@@ -106,11 +123,12 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
     props: {
       withLinksCountCategories: LinksCount,
       privacyPolicyDoc: item,
+      blogSetting,
     },
   };
 };
 
-const PrivacyPolicy: FC<Props> = ({categories, breadCrumbs, contents}) => {
+const PrivacyPolicy: FC<Props> = ({categories, breadCrumbs, contents, setting}) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   const options: Options = {
@@ -169,6 +187,7 @@ const PrivacyPolicy: FC<Props> = ({categories, breadCrumbs, contents}) => {
         <NavHeader
           items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
           currentPath="/privacy-policy"
+          logoUrl={setting.logoUrl}
         />
         <Box
           sx={{
@@ -194,7 +213,7 @@ const PrivacyPolicy: FC<Props> = ({categories, breadCrumbs, contents}) => {
             <Grid item xs={12} sm={12} md={4}>
               <Box
                 sx={{
-                  backgroundColor: '#094067',
+                  backgroundColor: theme.palette.secondary.main,
                   borderRadius: '8px',
                   padding: '16px',
                 }}
