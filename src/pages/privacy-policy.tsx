@@ -57,6 +57,7 @@ const PrivacyPolicyContainer: FC<ContainerProps> = ({
         title: category.fields.name,
         count,
         path: `/${category.fields.slug}`,
+        id: category.sys.id,
       })),
     [withLinksCountCategories]
   );

@@ -83,6 +83,7 @@ const HomeContainer: React.FC<ContainerProps> = ({withLinksCountCategories, arti
         title: category.fields.name,
         count,
         path: `/${category.fields.slug}`,
+        id: category.sys.id,
       })),
     [withLinksCountCategories]
   );

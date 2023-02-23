@@ -13,6 +13,7 @@ interface CategoryModel {
   slug: EntryFields.Text;
   name: EntryFields.Text;
   order?: number;
+  id: string;
 }
 
 interface PrivacyPolicyModel {
