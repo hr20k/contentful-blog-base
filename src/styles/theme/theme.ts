@@ -11,7 +11,7 @@ const themeMain = createTheme({
       contrastText: '#fffffe',
     },
     secondary: {
-      main: '#90b4ce',
+      main: '#094067',
     },
     error: {
       main: '#ef4565',
