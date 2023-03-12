@@ -38,7 +38,7 @@ interface CategoryContainerProps {
   category: Entry<CategoryModel>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
   articles: Array<Entry<ArticleModel>>;
-  blogSetting: Entry<SettingModel> | undefined;
+  blogSetting: Entry<SettingModel>;
 }
 
 interface CategoryProps {
@@ -54,7 +54,7 @@ interface CategoryProps {
     contents: string;
   }>;
   setting: {
-    logoUrl?: string;
+    logoUrl: string;
   };
 }
 
@@ -150,10 +150,7 @@ const CategoryContainer: VFC<ContainerProps> = ({
       categories={categoryLinks}
       links={links}
       setting={{
-        logoUrl:
-          typeof blogSetting !== 'undefined'
-            ? `https:${blogSetting.fields.logo.fields.file.url}`
-            : undefined,
+        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
       }}
     />
   );
@@ -178,7 +175,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
   const LinksCount = await withLinksCountToCategory(categoryEntries);
   const currentCategory = categoryEntries.items.find(({fields}) => fields.slug === params.category);
 
-  if (typeof currentCategory !== 'undefined') {
+  if (typeof currentCategory !== 'undefined' && typeof blogSetting !== 'undefined') {
     const entry = await client.getEntries<ArticleModel>({
       content_type: ContentType.Article,
       'fields.category.sys.contentType.sys.id': ContentType.Category,

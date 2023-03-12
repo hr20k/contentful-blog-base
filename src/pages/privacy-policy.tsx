@@ -37,7 +37,7 @@ const client = createClient({
 interface PrivacyPolicyContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
   privacyPolicyDoc: Entry<PrivacyPolicyModel>;
-  blogSetting: Entry<SettingModel> | undefined;
+  blogSetting: Entry<SettingModel>;
 }
 
 interface PrivacyPolicyProps {
@@ -45,7 +45,7 @@ interface PrivacyPolicyProps {
   categories: Array<CategoryLink>;
   contents: Document | null;
   setting: {
-    logoUrl?: string;
+    logoUrl: string;
   };
 }
 
@@ -87,10 +87,7 @@ const PrivacyPolicyContainer: FC<ContainerProps> = ({
       breadCrumbs={breadCrumbs}
       contents={privacyPolicyDoc.fields.contents}
       setting={{
-        logoUrl:
-          typeof blogSetting !== 'undefined'
-            ? `https:${blogSetting.fields.logo.fields.file.url}`
-            : undefined,
+        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
       }}
     />
   );
@@ -114,7 +111,7 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
   });
   const item = entry.items.shift();
 
-  if (typeof item === 'undefined') {
+  if (typeof item === 'undefined' || typeof blogSetting === 'undefined') {
     return {
       notFound: true,
     };

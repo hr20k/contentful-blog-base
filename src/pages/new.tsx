@@ -24,20 +24,20 @@ import {withLinksCountToCategory} from '@/utils';
 interface HomeContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
   articles: Array<Entry<ArticleModel>>;
-  blogSetting: Entry<SettingModel> | undefined;
+  blogSetting: Entry<SettingModel>;
 }
 
 interface HomeProps {
   categories: Array<CategoryLink>;
   links: Array<{
     href: string;
-    imageSrc?: string;
+    imageSrc: string;
     title: string;
     date: string;
     contents: string;
   }>;
   setting: {
-    logoUrl?: string;
+    logoUrl: string;
   };
 }
 
@@ -71,11 +71,8 @@ const HomeContainer: VFC<ContainerProps> = ({withLinksCountCategories, articles,
     return contentsStr;
   };
 
-  const defaultThumbnailUrl = useMemo<string | undefined>(
-    () =>
-      typeof blogSetting !== 'undefined'
-        ? `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`
-        : undefined,
+  const defaultThumbnailUrl = useMemo<string>(
+    () => `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`,
     [blogSetting]
   );
 
@@ -110,10 +107,7 @@ const HomeContainer: VFC<ContainerProps> = ({withLinksCountCategories, articles,
       links={links}
       categories={categoryLinks}
       setting={{
-        logoUrl:
-          typeof blogSetting !== 'undefined'
-            ? `https:${blogSetting.fields.logo.fields.file.url}`
-            : undefined,
+        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
       }}
     />
   );
@@ -139,12 +133,18 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
   });
   const Linkscount = await withLinksCountToCategory(categoryEntries);
 
+  if (typeof blogSetting !== 'undefined') {
+    return {
+      props: {
+        withLinksCountCategories: Linkscount,
+        articles: entry.items,
+        blogSetting,
+      },
+    };
+  }
+
   return {
-    props: {
-      withLinksCountCategories: Linkscount,
-      articles: entry.items,
-      blogSetting,
-    },
+    notFound: true,
   };
 };
 

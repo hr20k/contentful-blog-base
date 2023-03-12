@@ -39,7 +39,7 @@ interface HomeProps {
     }>;
   }>;
   setting: {
-    logoUrl?: string;
+    logoUrl: string;
   };
 }
 
@@ -118,10 +118,7 @@ const HomeContainer: React.FC<ContainerProps> = ({
       links={itemLinks}
       categories={categoryLinks}
       setting={{
-        logoUrl:
-          typeof blogSetting !== 'undefined'
-            ? `https:${blogSetting.fields.logo.fields.file.url}`
-            : undefined,
+        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
       }}
     />
   );
@@ -147,18 +144,17 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
   });
   const LinksCount = await withLinksCountToCategory(categoryEntries);
 
-  if (typeof blogSetting === 'undefined') {
+  if (typeof blogSetting !== 'undefined') {
     return {
-      notFound: true,
+      props: {
+        withLinksCountCategories: LinksCount,
+        articles: entry.items,
+        blogSetting,
+      },
     };
   }
-
   return {
-    props: {
-      withLinksCountCategories: LinksCount,
-      articles: entry.items,
-      blogSetting,
-    },
+    notFound: true,
   };
 };
 
