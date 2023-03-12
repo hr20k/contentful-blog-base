@@ -24,7 +24,7 @@ import {withLinksCountToCategory} from '@/utils';
 interface HomeContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
   articles: Array<Entry<ArticleModel>>;
-  blogSetting: Entry<SettingModel> | undefined;
+  blogSetting: Entry<SettingModel>;
 }
 
 interface HomeProps {
@@ -33,7 +33,7 @@ interface HomeProps {
     category: CategoryLink;
     items: Array<{
       href: string;
-      imageSrc?: string;
+      imageSrc: string;
       title: string;
       date: string;
     }>;
@@ -63,11 +63,8 @@ const HomeContainer: React.FC<ContainerProps> = ({
     [withLinksCountCategories]
   );
 
-  const defaultThumbnailUrl = useMemo<string | undefined>(
-    () =>
-      typeof blogSetting !== 'undefined'
-        ? `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`
-        : undefined,
+  const defaultThumbnailUrl = useMemo<string>(
+    () => `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`,
     [blogSetting]
   );
 
@@ -76,7 +73,7 @@ const HomeContainer: React.FC<ContainerProps> = ({
       category: CategoryLink;
       items: Array<{
         href: string;
-        imageSrc?: string;
+        imageSrc: string;
         title: string;
         date: string;
       }>;
@@ -149,6 +146,12 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
     order: 'fields.order',
   });
   const LinksCount = await withLinksCountToCategory(categoryEntries);
+
+  if (typeof blogSetting === 'undefined') {
+    return {
+      notFound: true,
+    };
+  }
 
   return {
     props: {

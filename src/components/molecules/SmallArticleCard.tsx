@@ -1,13 +1,11 @@
 import styled from '@emotion/styled';
-import {Box, Paper, Typography, Link as MuiLink, useMediaQuery, Grid} from '@mui/material';
+import {Box, Paper, Typography, Link as MuiLink, Grid} from '@mui/material';
 import Link from 'next/link';
 import * as React from 'react';
 
-import {theme} from '@/styles/theme/theme';
-
 interface SmallArticleCardProps {
   href: string;
-  imageSrc?: string;
+  imageSrc: string;
   title: string;
   date: string;
 }
@@ -20,8 +18,6 @@ const Img = styled.img({
 });
 
 const SmallArticleCard: React.FC<Props> = ({href, imageSrc, title, date}) => {
-  const matches = useMediaQuery(theme.breakpoints.up('sm'));
-
   return (
     <Link href={href} passHref>
       <MuiLink
@@ -32,16 +28,10 @@ const SmallArticleCard: React.FC<Props> = ({href, imageSrc, title, date}) => {
       >
         <Paper>
           <Grid container minHeight="83px">
-            <Grid xs={4}>
-              <Img
-                // TODO: Contentful から取得する
-                src={imageSrc ?? '/images/home.webp'}
-                alt={title}
-                width="100%"
-                loading="lazy"
-              />
+            <Grid item xs={4}>
+              <Img src={imageSrc} alt={title} width="100%" loading="lazy" />
             </Grid>
-            <Grid xs paddingLeft={2}>
+            <Grid item xs paddingLeft={2}>
               <Box
                 component="div"
                 sx={{

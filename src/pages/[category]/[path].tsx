@@ -64,7 +64,7 @@ interface ArticleContainerProps {
   category: Entry<CategoryModel>;
   article: Entry<ArticleModel>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
-  blogSetting: Entry<SettingModel> | undefined;
+  blogSetting: Entry<SettingModel>;
 }
 
 interface ArticleProps {
@@ -78,7 +78,8 @@ interface ArticleProps {
   contents: Document | null;
   categories: Array<CategoryLink>;
   setting: {
-    logoUrl?: string;
+    logoUrl: string;
+    defaultThumbnailUrl: string;
   };
 }
 
@@ -134,10 +135,8 @@ const ArticleContainer: React.FC<ContainerProps> = ({
       contents={article.fields.contents}
       categories={categoryLinks}
       setting={{
-        logoUrl:
-          typeof blogSetting !== 'undefined'
-            ? `https:${blogSetting.fields.logo.fields.file.url}`
-            : undefined,
+        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
+        defaultThumbnailUrl: `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`,
       }}
     />
   );
@@ -174,7 +173,11 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
     });
     const item = entry.items.shift();
 
-    if (typeof item !== 'undefined' && typeof currentCategory !== 'undefined') {
+    if (
+      typeof item !== 'undefined' &&
+      typeof currentCategory !== 'undefined' &&
+      typeof blogSetting !== 'undefined'
+    ) {
       return {
         props: {
           path: `/${params.category}/${params.path}`,
@@ -335,12 +338,15 @@ const Article: React.FC<Props> = ({
     [BLOCKS.EMBEDDED_ENTRY]: (node: any) => {
       const title = node.data.target.fields.title ?? '';
       const categorySlug = categoryMap[node.data.target.fields.category.sys.id]?.path;
+      const imageSrc =
+        node.data.target.fields.thumbnail?.fields?.file?.url ?? setting.defaultThumbnailUrl;
       const slug = node.data.target.fields.slug;
       const createdAt = node.data.target.sys.createdAt;
       return (
         <SmallArticleCard
           title={title}
           href={`${categorySlug}/${slug}`}
+          imageSrc={imageSrc}
           date={`${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`}
         />
       );

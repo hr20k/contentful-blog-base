@@ -12,7 +12,7 @@ interface CategoryCardProps {
   category: CategoryLink;
   items: Array<{
     href: string;
-    imageSrc?: string;
+    imageSrc: string;
     title: string;
     date: string;
   }>;
