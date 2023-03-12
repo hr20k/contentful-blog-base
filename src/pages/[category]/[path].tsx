@@ -15,7 +15,6 @@ import YouTube from 'react-youtube';
 import {CategoryModel, ArticleModel, WithLinksCountCategory} from '@/api/contentful/models/blog';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
-import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {NavHeader} from '@/components/molecules/NavHeader';
