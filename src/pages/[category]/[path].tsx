@@ -1,10 +1,11 @@
 import {createHash} from 'crypto';
 import {ParsedUrlQuery} from 'querystring';
 
-import {documentToReactComponents, Options} from '@contentful/rich-text-react-renderer';
+import {documentToReactComponents, RenderNode} from '@contentful/rich-text-react-renderer';
 import {BLOCKS, Document, INLINES} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
+import * as contentful from 'contentful';
 import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
@@ -24,6 +25,7 @@ import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {NavHeader} from '@/components/molecules/NavHeader';
 import {Share} from '@/components/molecules/Share';
+import {SmallArticleCard} from '@/components/molecules/SmallArticleCard';
 import {TableOfContents} from '@/components/molecules/TableOfContents';
 import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
@@ -115,6 +117,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
         title: category.fields.name,
         count,
         path: `/${category.fields.slug}`,
+        id: category.sys.id,
       })),
     [withLinksCountCategories]
   );
@@ -223,111 +226,137 @@ const Article: React.FC<Props> = ({
   setting,
 }: Props) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
+  const categoryMap = categories.reduce<Record<string, CategoryLink>>(
+    (acc, value) => ({...acc, [value.id]: value}),
+    {}
+  );
 
-  const options: Options = {
-    renderNode: {
-      [BLOCKS.HEADING_2]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (content?.nodeType === 'text') {
-          const anchor = createHash('md5').update(content.value).digest('hex');
-          return (
-            <Typography id={anchor} variant="h2" sx={{marginTop: '32px', marginBottom: '16px'}}>
-              {children}
-            </Typography>
-          );
-        }
-        return children;
-      },
-      [BLOCKS.HEADING_3]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (content?.nodeType === 'text') {
-          const anchor = createHash('md5').update(content.value).digest('hex');
-          return (
-            <Typography id={anchor} variant="h3" sx={{borderBottom: 'solid 2px', lineHeight: 2}}>
-              {children}
-            </Typography>
-          );
-        }
-        return children;
-      },
-      [BLOCKS.HEADING_4]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (content?.nodeType === 'text') {
-          const anchor = createHash('md5').update(content.value).digest('hex');
-          return (
-            <Typography id={anchor} variant="h4">
-              {children}
-            </Typography>
-          );
-        }
-        return children;
-      },
-      [BLOCKS.HEADING_5]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (content?.nodeType === 'text') {
-          const anchor = createHash('md5').update(content.value).digest('hex');
-          return (
-            <Typography id={anchor} variant="h5">
-              {children}
-            </Typography>
-          );
-        }
-        return children;
-      },
-      [BLOCKS.HEADING_6]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (content?.nodeType === 'text') {
-          const anchor = createHash('md5').update(content.value).digest('hex');
-          return (
-            <Typography id={anchor} variant="h6">
-              {children}
-            </Typography>
-          );
-        }
-        return children;
-      },
-      [BLOCKS.PARAGRAPH]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (
-          typeof content !== 'undefined' &&
-          'marks' in content &&
-          content.marks.find((x) => x.type === 'code')
-        ) {
-          return (
-            <div>
-              <pre>
-                <code>{children}</code>
-              </pre>
-            </div>
-          );
-        }
-        if (content?.nodeType === 'text') {
-          return <Text>{children}</Text>;
-        }
-        return <p>{children}</p>;
-      },
-      [BLOCKS.EMBEDDED_ASSET]: (node) => {
+  const renderNode: Record<
+    string,
+    (node: contentful.RichTextContent, children: React.ReactNode) => React.ReactNode
+  > = {
+    [BLOCKS.HEADING_2]: (node, children) => {
+      const content = node.content?.slice(0, 1).shift();
+      if (content?.nodeType === 'text' && typeof content.value !== 'undefined') {
+        const anchor = createHash('md5').update(content.value).digest('hex');
         return (
-          <Box
-            sx={{
-              margin: '16px 0',
-            }}
-          >
-            <Image
-              src={`https:${node.data.target.fields.file.url}`}
-              width={node.data.target.fields.file.details.image.width}
-              height={node.data.target.fields.file.details.image.height}
-              alt={node.data.target.fields.title}
-            />
-            {'fields' in node.data.target &&
-            'description' in node.data.target.fields &&
-            node.data.target.fields.description !== '' ? (
-              <Typography variant="caption">{node.data.target.fields.description}</Typography>
-            ) : null}
-          </Box>
+          <Typography id={anchor} variant="h2" sx={{marginTop: '32px', marginBottom: '16px'}}>
+            {children}
+          </Typography>
         );
-      },
-      [INLINES.HYPERLINK]: (node, children) => {
+      }
+      return children;
+    },
+    [BLOCKS.HEADING_3]: (node, children) => {
+      const content = node.content?.slice(0, 1).shift();
+      if (content?.nodeType === 'text' && typeof content.value !== 'undefined') {
+        const anchor = createHash('md5').update(content.value).digest('hex');
+        return (
+          <Typography id={anchor} variant="h3" sx={{borderBottom: 'solid 2px', lineHeight: 2}}>
+            {children}
+          </Typography>
+        );
+      }
+      return children;
+    },
+    [BLOCKS.HEADING_4]: (node, children) => {
+      const content = node.content?.slice(0, 1).shift();
+      if (content?.nodeType === 'text' && typeof content.value !== 'undefined') {
+        const anchor = createHash('md5').update(content.value).digest('hex');
+        return (
+          <Typography id={anchor} variant="h4">
+            {children}
+          </Typography>
+        );
+      }
+      return children;
+    },
+    [BLOCKS.HEADING_5]: (node, children) => {
+      const content = node.content?.slice(0, 1).shift();
+      if (content?.nodeType === 'text' && typeof content.value !== 'undefined') {
+        const anchor = createHash('md5').update(content.value).digest('hex');
+        return (
+          <Typography id={anchor} variant="h5">
+            {children}
+          </Typography>
+        );
+      }
+      return children;
+    },
+    [BLOCKS.HEADING_6]: (node, children) => {
+      const content = node.content?.slice(0, 1).shift();
+      if (content?.nodeType === 'text' && typeof content.value !== 'undefined') {
+        const anchor = createHash('md5').update(content.value).digest('hex');
+        return (
+          <Typography id={anchor} variant="h6">
+            {children}
+          </Typography>
+        );
+      }
+      return children;
+    },
+    [BLOCKS.PARAGRAPH]: (node, children) => {
+      const content = node.content?.slice(0, 1).shift();
+      if (content?.marks.find((x) => x.type === 'code')) {
+        return (
+          <div>
+            <pre>
+              <code>{children}</code>
+            </pre>
+          </div>
+        );
+      }
+      if (content?.nodeType === 'text') {
+        return <Text>{children}</Text>;
+      }
+      return <p>{children}</p>;
+    },
+    [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
+      const fields = node.data.target.fields;
+
+      return (
+        <Box
+          sx={{
+            margin: '16px 0',
+          }}
+        >
+          <Image
+            src={`https:${fields.file.url}`}
+            width={fields.file.details.image.width}
+            height={fields.file.details.image.height}
+            alt={fields.file.title}
+          />
+          {fields.description !== '' ? (
+            <Typography variant="caption">{node.data.target.fields.description}</Typography>
+          ) : null}
+        </Box>
+      );
+    },
+    [BLOCKS.EMBEDDED_ENTRY]: (node: any) => {
+      const title = node.data.target.fields.title ?? '';
+      const categorySlug = categoryMap[node.data.target.fields.category.sys.id]?.path;
+      const slug = node.data.target.fields.slug;
+      const createdAt = node.data.target.sys.createdAt;
+      return (
+        <SmallArticleCard
+          title={title}
+          href={`${categorySlug}/${slug}`}
+          date={`${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`}
+        />
+      );
+    },
+    [INLINES.EMBEDDED_ENTRY]: (node: any) => {
+      const title = node.data.target.fields.title ?? '';
+      const categorySlug = categoryMap[node.data.target.fields.category.sys.id]?.path;
+      const slug = node.data.target.fields.slug;
+      return <a href={`${categorySlug}/${slug}`}>{title}</a>;
+    },
+    [INLINES.HYPERLINK]: (node, children) => {
+      if (
+        node.nodeType === INLINES.HYPERLINK &&
+        'uri' in node.data &&
+        typeof node.data.uri === 'string'
+      ) {
         const youtubeRe = /\/youtu.be\/(.+)$/;
         const matched = node.data.uri.match(youtubeRe);
 
@@ -339,15 +368,14 @@ const Article: React.FC<Props> = ({
           );
         }
 
-        if (
-          node.nodeType === INLINES.HYPERLINK &&
-          'uri' in node.data &&
-          typeof node.data.uri === 'string'
-        ) {
-          return <a href={node.data.uri}>{node.data.uri}</a>;
-        }
-        return children;
-      },
+        const content = node.content?.slice(0, 1).shift();
+        return (
+          <a href={node.data.uri} target="_blank" rel="noreferrer noopener">
+            {content?.value ?? node.data.uri}
+          </a>
+        );
+      }
+      return children;
     },
   };
 
@@ -394,7 +422,11 @@ const Article: React.FC<Props> = ({
               <Toc>
                 <TableOfContents contents={contents} />
               </Toc>
-              <div>{contents !== null ? documentToReactComponents(contents, options) : null}</div>
+              <div>
+                {contents !== null
+                  ? documentToReactComponents(contents, {renderNode: renderNode as RenderNode})
+                  : null}
+              </div>
               <Share path={path} title={title} />
             </Grid>
             <Grid item xs={12} sm={12} md={4}>

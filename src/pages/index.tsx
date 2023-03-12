@@ -58,6 +58,7 @@ const HomeContainer: React.FC<ContainerProps> = ({
         title: category.fields.name,
         count,
         path: `/${category.fields.slug}`,
+        id: category.sys.id,
       })),
     [withLinksCountCategories]
   );
@@ -87,6 +88,7 @@ const HomeContainer: React.FC<ContainerProps> = ({
           count: 0,
           path: '/new',
           title: '新着記事',
+          id: '',
         },
         items: articles.map(({fields: {title, slug, thumbnail, category}, sys: {createdAt}}) => {
           return {
