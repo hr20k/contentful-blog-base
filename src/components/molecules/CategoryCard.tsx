@@ -1,12 +1,9 @@
-import styled from '@emotion/styled';
-import {Box, Paper, Typography, Link as MuiLink, useMediaQuery, Button} from '@mui/material';
+import {Box, Typography, Button} from '@mui/material';
 import Link from 'next/link';
 import * as React from 'react';
 
+import {SmallArticleCard} from '@/components/molecules/SmallArticleCard';
 import type {CategoryLink} from '@/libs/models/CategoryLink';
-import {theme} from '@/styles/theme/theme';
-
-import {SmallArticleCard} from './SmallArticleCard';
 
 interface CategoryCardProps {
   category: CategoryLink;
@@ -19,11 +16,6 @@ interface CategoryCardProps {
 }
 
 type Props = CategoryCardProps;
-
-const Img = styled.img({
-  objectFit: 'cover',
-  borderRadius: '4px',
-});
 
 const CategoryCard: React.FC<Props> = ({category, items}) => {
   return (
