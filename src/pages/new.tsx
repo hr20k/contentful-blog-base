@@ -3,9 +3,14 @@ import {Box, Grid, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticProps} from 'next';
-import * as React from 'react';
+import {useMemo, VFC} from 'react';
 
-import {CategoryModel, ArticleModel, WithLinksCountCategory} from '@/api/contentful/models/blog';
+import {
+  CategoryModel,
+  ArticleModel,
+  WithLinksCountCategory,
+  SettingModel,
+} from '@/api/contentful/models/blog';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
@@ -19,6 +24,7 @@ import {withLinksCountToCategory} from '@/utils';
 interface HomeContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
   articles: Array<Entry<ArticleModel>>;
+  blogSetting: Entry<SettingModel> | undefined;
 }
 
 interface HomeProps {
@@ -30,13 +36,16 @@ interface HomeProps {
     date: string;
     contents: string;
   }>;
+  setting: {
+    logoUrl?: string;
+  };
 }
 
 type ContainerProps = HomeContainerProps;
 
 type Props = HomeProps;
 
-const HomeContainer: React.FC<ContainerProps> = ({withLinksCountCategories, articles}) => {
+const HomeContainer: VFC<ContainerProps> = ({withLinksCountCategories, articles, blogSetting}) => {
   const getValue = (content: Block | Inline): string => {
     return content.content
       .map((c) => {
@@ -62,12 +71,20 @@ const HomeContainer: React.FC<ContainerProps> = ({withLinksCountCategories, arti
     return contentsStr;
   };
 
-  const links = React.useMemo(
+  const defaultThumbnailUrl = useMemo<string | undefined>(
+    () =>
+      typeof blogSetting !== 'undefined'
+        ? `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`
+        : undefined,
+    [blogSetting]
+  );
+
+  const links = useMemo(
     () =>
       articles.map(({fields: {title, slug, thumbnail, category, contents}, sys: {createdAt}}) => {
         return {
           href: `/${category.fields.slug}/${slug}`,
-          imageSrc: thumbnail?.fields.file.url,
+          imageSrc: thumbnail?.fields.file.url ?? defaultThumbnailUrl,
           title,
           date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
           contents: createContentsStr(contents),
@@ -77,7 +94,7 @@ const HomeContainer: React.FC<ContainerProps> = ({withLinksCountCategories, arti
     [articles]
   );
 
-  const categoryLinks = React.useMemo(
+  const categoryLinks = useMemo(
     () =>
       withLinksCountCategories.map(({category, count}) => ({
         title: category.fields.name,
@@ -88,7 +105,18 @@ const HomeContainer: React.FC<ContainerProps> = ({withLinksCountCategories, arti
     [withLinksCountCategories]
   );
 
-  return <Home links={links} categories={categoryLinks} />;
+  return (
+    <Home
+      links={links}
+      categories={categoryLinks}
+      setting={{
+        logoUrl:
+          typeof blogSetting !== 'undefined'
+            ? `https:${blogSetting.fields.logo.fields.file.url}`
+            : undefined,
+      }}
+    />
+  );
 };
 
 const getStaticProps: GetStaticProps<ContainerProps> = async () => {
@@ -96,6 +124,11 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
     space: process.env.CONTENTFUL_SPACE_ID ?? '',
     accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
   });
+
+  const settings = await client.getEntries<SettingModel>({
+    content_type: ContentType.Setting,
+  });
+  const blogSetting = settings.items.pop();
 
   const entry = await client.getEntries<ArticleModel>({
     content_type: ContentType.Article,
@@ -110,11 +143,12 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
     props: {
       withLinksCountCategories: Linkscount,
       articles: entry.items,
+      blogSetting,
     },
   };
 };
 
-const Home: React.FC<Props> = ({links, categories}) => {
+const Home: React.FC<Props> = ({links, categories, setting}) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
@@ -124,6 +158,7 @@ const Home: React.FC<Props> = ({links, categories}) => {
         <NavHeader
           items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
           currentPath="/"
+          logoUrl={setting.logoUrl}
         />
         <Box
           sx={{
@@ -157,7 +192,7 @@ const Home: React.FC<Props> = ({links, categories}) => {
             <Grid item xs={12} sm={12} md={4}>
               <Box
                 sx={{
-                  backgroundColor: '#094067',
+                  backgroundColor: theme.palette.secondary.main,
                   borderRadius: '8px',
                   padding: '16px',
                 }}

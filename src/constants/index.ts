@@ -8,6 +8,7 @@ const ContentType = {
   Article: 'article',
   Category: 'category',
   PrivacyPolicy: 'privacyPolicy',
+  Setting: 'setting',
 } as const;
 
 type ContentType = typeof ContentType[keyof typeof ContentType];

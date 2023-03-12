@@ -1,16 +1,16 @@
 import {VFC} from 'react';
 
-import {Header} from '@/components/molecules/Header';
+import {Header, HeaderProps} from '@/components/molecules/Header';
 import {NavTabs, NavTabsProps} from '@/components/molecules/NavTabs';
 
-type NavHeaderProps = NavTabsProps;
+type NavHeaderProps = NavTabsProps & HeaderProps;
 
 type Props = NavHeaderProps;
 
-const NavHeader: VFC<Props> = ({items, currentPath}) => {
+const NavHeader: VFC<Props> = ({items, currentPath, logoUrl}) => {
   return (
     <>
-      <Header />
+      <Header logoUrl={logoUrl} />
       <NavTabs items={items} currentPath={currentPath} />
     </>
   );

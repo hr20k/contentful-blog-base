@@ -4,6 +4,7 @@ import {FC, useCallback} from 'react';
 
 import {gaEvent} from '@/libs/gtag';
 import {CategoryLink} from '@/libs/models/CategoryLink';
+import {theme} from '@/styles/theme/theme';
 import {GAAction, GACategory} from '@/types/googleAnalytics/event';
 
 interface CategoryLinkListProps {
@@ -22,7 +23,7 @@ const CategoryLinkList: FC<Props> = ({categories}) => {
 
   return (
     <>
-      <Typography variant="h3" sx={{color: '#fffffe'}}>
+      <Typography variant="h3" sx={{color: theme.palette.primary.contrastText}}>
         カテゴリー
       </Typography>
       <List sx={{marginTop: '16px'}}>

@@ -2,6 +2,7 @@ import {Box, Tabs} from '@mui/material';
 import {useMemo, VFC} from 'react';
 
 import {LinkTab, LinkTabProps} from '@/components/atoms/LinkTab';
+import {palette} from '@/styles/theme/theme';
 
 interface NavTabsProps {
   items: Array<LinkTabProps>;
@@ -26,8 +27,8 @@ const NavTabs: VFC<Props> = ({items, currentPath}) => {
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        backgroundColor: '#094067',
-        color: '#fffffe',
+        backgroundColor: palette.navTabsBackgroundColor,
+        color: palette.navTabsColor,
       }}
     >
       <Tabs
@@ -37,7 +38,7 @@ const NavTabs: VFC<Props> = ({items, currentPath}) => {
         aria-label="nav tabs"
         sx={{
           ['& .MuiTabs-indicator']: {
-            backgroundColor: '#fffffe',
+            backgroundColor: palette.navTabsColor,
           },
         }}
       >

@@ -5,9 +5,14 @@ import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import {createClient, Entry} from 'contentful';
 import {format} from 'date-fns';
 import {GetStaticPaths, GetStaticProps} from 'next';
-import * as React from 'react';
+import {useMemo, VFC} from 'react';
 
-import {CategoryModel, ArticleModel, WithLinksCountCategory} from '@/api/contentful/models/blog';
+import {
+  CategoryModel,
+  ArticleModel,
+  WithLinksCountCategory,
+  SettingModel,
+} from '@/api/contentful/models/blog';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
@@ -33,6 +38,7 @@ interface CategoryContainerProps {
   category: Entry<CategoryModel>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
   articles: Array<Entry<ArticleModel>>;
+  blogSetting: Entry<SettingModel> | undefined;
 }
 
 interface CategoryProps {
@@ -47,16 +53,20 @@ interface CategoryProps {
     date: string;
     contents: string;
   }>;
+  setting: {
+    logoUrl?: string;
+  };
 }
 
 type ContainerProps = CategoryContainerProps;
 
 type Props = CategoryProps;
 
-const CategoryContainer: React.FC<ContainerProps> = ({
+const CategoryContainer: VFC<ContainerProps> = ({
   category,
   withLinksCountCategories,
   articles,
+  blogSetting,
 }) => {
   const getValue = (content: Block | Inline): string => {
     return content.content
@@ -83,12 +93,20 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     return contentsStr;
   };
 
-  const links = React.useMemo(
+  const defaultThumbnailUrl = useMemo<string | undefined>(
+    () =>
+      typeof blogSetting !== 'undefined'
+        ? `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`
+        : undefined,
+    [blogSetting]
+  );
+
+  const links = useMemo(
     () =>
       articles.map(({fields: {title, slug, thumbnail, contents}, sys: {createdAt}}) => {
         return {
           href: `/${category.fields.slug}/${slug}`,
-          imageSrc: thumbnail?.fields.file.url,
+          imageSrc: thumbnail?.fields.file.url ?? defaultThumbnailUrl,
           title,
           date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
           contents: createContentsStr(contents),
@@ -98,7 +116,7 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     [articles]
   );
 
-  const categoryLinks = React.useMemo(
+  const categoryLinks = useMemo(
     () =>
       withLinksCountCategories.map(({category, count}) => ({
         title: category.fields.name,
@@ -109,9 +127,9 @@ const CategoryContainer: React.FC<ContainerProps> = ({
     [withLinksCountCategories]
   );
 
-  const categoryTitle = React.useMemo(() => category.fields.name, [category.fields.name]);
+  const categoryTitle = useMemo(() => category.fields.name, [category.fields.name]);
 
-  const breadCrumbs: Array<BreadCrumbsModel> = React.useMemo(() => {
+  const breadCrumbs: Array<BreadCrumbsModel> = useMemo(() => {
     return [
       {
         href: '/',
@@ -131,6 +149,12 @@ const CategoryContainer: React.FC<ContainerProps> = ({
       breadCrumbs={breadCrumbs}
       categories={categoryLinks}
       links={links}
+      setting={{
+        logoUrl:
+          typeof blogSetting !== 'undefined'
+            ? `https:${blogSetting.fields.logo.fields.file.url}`
+            : undefined,
+      }}
     />
   );
 };
@@ -141,6 +165,11 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
       notFound: true,
     };
   }
+
+  const settings = await client.getEntries<SettingModel>({
+    content_type: ContentType.Setting,
+  });
+  const blogSetting = settings.items.pop();
 
   const categoryEntries = await client.getEntries<CategoryModel>({
     content_type: ContentType.Category,
@@ -161,6 +190,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
         category: currentCategory,
         withLinksCountCategories: LinksCount,
         articles: entry.items,
+        blogSetting,
       },
     };
   }
@@ -186,7 +216,14 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
   };
 };
 
-const Category: React.FC<Props> = ({path, categoryTitle, breadCrumbs, links, categories}) => {
+const Category: React.FC<Props> = ({
+  path,
+  categoryTitle,
+  breadCrumbs,
+  links,
+  categories,
+  setting,
+}) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
@@ -196,6 +233,7 @@ const Category: React.FC<Props> = ({path, categoryTitle, breadCrumbs, links, cat
         <NavHeader
           items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
           currentPath={path}
+          logoUrl={setting.logoUrl}
         />
         <Box
           sx={{
@@ -240,7 +278,7 @@ const Category: React.FC<Props> = ({path, categoryTitle, breadCrumbs, links, cat
             <Grid item xs={12} sm={12} md={4}>
               <Box
                 sx={{
-                  backgroundColor: '#094067',
+                  backgroundColor: theme.palette.secondary.main,
                   borderRadius: '8px',
                   padding: '16px',
                 }}
