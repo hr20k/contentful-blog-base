@@ -80,6 +80,7 @@ interface ArticleProps {
   setting: {
     logoUrl: string;
     defaultThumbnailUrl: string;
+    lineId?: string;
   };
 }
 
@@ -137,6 +138,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
       setting={{
         logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
         defaultThumbnailUrl: `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`,
+        lineId: blogSetting.fields.lineId,
       }}
     />
   );
@@ -433,7 +435,7 @@ const Article: React.FC<Props> = ({
                   ? documentToReactComponents(contents, {renderNode: renderNode as RenderNode})
                   : null}
               </div>
-              <Share path={path} title={title} />
+              <Share path={path} title={title} lineId={setting.lineId} />
             </Grid>
             <Grid item xs={12} sm={12} md={4}>
               <Box

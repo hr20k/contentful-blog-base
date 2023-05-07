@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import {Box} from '@mui/material';
+import {Box, Stack} from '@mui/material';
 import * as React from 'react';
 import {
   TwitterShareButton,
@@ -17,11 +17,12 @@ import {siteTitle, siteUrl} from '@/constants';
 interface ShareProps {
   path?: string;
   title?: string;
+  lineId?: string;
 }
 
 type Props = ShareProps;
 
-const Share: React.FC<Props> = ({path = '', title}) => {
+const Share: React.FC<Props> = ({path = '', title, lineId}) => {
   const url = `${siteUrl}${path}`;
   const displayTitle = typeof title !== 'undefined' ? `${title} | ${siteTitle}` : siteTitle;
 
@@ -33,38 +34,57 @@ const Share: React.FC<Props> = ({path = '', title}) => {
   });
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '200px',
-      }}
-    >
-      <ShareButton>
-        <TwitterShareButton url={url} title={displayTitle}>
-          <TwitterIcon size={30} round={true} />
-        </TwitterShareButton>
-      </ShareButton>
+    <Stack height="200px" alignItems="center" justifyContent="center" gap="1rem">
+      {typeof lineId !== 'undefined' && (
+        <Box>
+          <div
+            className="line-it-button"
+            data-lang="ja"
+            data-type="friend"
+            data-env="REAL"
+            data-lineId={lineId}
+            style={{display: 'none'}}
+          ></div>
+          <script
+            src="https://www.line-website.com/social-plugins/js/thirdparty/loader.min.js"
+            async
+            defer
+          ></script>
+        </Box>
+      )}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          // height: '200px',
+        }}
+      >
+        <ShareButton>
+          <TwitterShareButton url={url} title={displayTitle}>
+            <TwitterIcon size={30} round={true} />
+          </TwitterShareButton>
+        </ShareButton>
 
-      <ShareButton>
-        <FacebookShareButton url={url} title={displayTitle}>
-          <FacebookIcon size={30} round={true} />
-        </FacebookShareButton>
-      </ShareButton>
+        <ShareButton>
+          <FacebookShareButton url={url} title={displayTitle}>
+            <FacebookIcon size={30} round={true} />
+          </FacebookShareButton>
+        </ShareButton>
 
-      <ShareButton>
-        <LineShareButton url={url} title={displayTitle}>
-          <LineIcon size={30} round={true} />
-        </LineShareButton>
-      </ShareButton>
+        <ShareButton>
+          <LineShareButton url={url} title={displayTitle}>
+            <LineIcon size={30} round={true} />
+          </LineShareButton>
+        </ShareButton>
 
-      <ShareButton>
-        <HatenaShareButton url={url} title={displayTitle}>
-          <HatenaIcon size={30} round={true} />
-        </HatenaShareButton>
-      </ShareButton>
-    </Box>
+        <ShareButton>
+          <HatenaShareButton url={url} title={displayTitle}>
+            <HatenaIcon size={30} round={true} />
+          </HatenaShareButton>
+        </ShareButton>
+      </Box>
+    </Stack>
   );
 };
 

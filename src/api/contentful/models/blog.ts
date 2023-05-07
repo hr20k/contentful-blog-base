@@ -30,6 +30,7 @@ interface SettingModel {
   description: string;
   logo: Asset;
   defaultThumbnail: Asset;
+  lineId?: string;
 }
 
 export type {ArticleModel, CategoryModel, PrivacyPolicyModel, WithLinksCountCategory, SettingModel};
