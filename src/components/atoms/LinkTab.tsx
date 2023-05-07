@@ -22,18 +22,18 @@ const LinkTab: VFC<Props> = ({id, label, href}) => {
   }, []);
 
   return (
-    <Link href={href} passHref>
-      <Tab
-        component="a"
-        id={id}
-        label={label}
-        value={href}
-        onClick={handleClick}
-        sx={{
-          fontWeight: 'bold',
-        }}
-      />
-    </Link>
+    <Tab
+      component={Link}
+      href={href}
+      passHref
+      id={id}
+      label={label}
+      value={href}
+      onClick={handleClick}
+      sx={{
+        fontWeight: 'bold',
+      }}
+    />
   );
 };
 

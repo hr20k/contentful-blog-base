@@ -1,6 +1,7 @@
 import {CacheProvider, EmotionCache} from '@emotion/react';
 import {CssBaseline, ThemeProvider} from '@mui/material';
 import {DefaultSeo} from 'next-seo';
+import Head from 'next/head';
 import {useEffect} from 'react';
 
 import {siteDescription, siteTitle, siteUrl} from '@/constants';
@@ -31,6 +32,9 @@ const App: React.FC<MyAppProps> = ({
 
   return (
     <>
+      <Head>
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
+      </Head>
       <DefaultSeo
         titleTemplate={`%s | ${siteTitle}`}
         defaultTitle={siteTitle}

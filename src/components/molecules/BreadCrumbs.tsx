@@ -24,8 +24,8 @@ const BreadCrumbs: FC<Props> = ({breadCrumbs}) => {
   return (
     <MuiBreadcrumbs aria-label="breadcrumb" separator={<NavigateNextIcon fontSize="small" />}>
       {breadCrumbs.slice(0, -1).map(({href, displayName}) => (
-        <Link key={href} href={href}>
-          <a onClick={handleClick}>{displayName}</a>
+        <Link key={href} href={href} onClick={handleClick}>
+          {displayName}
         </Link>
       ))}
       {breadCrumbs.slice(-1).map(({href, displayName}) => (

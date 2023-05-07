@@ -25,7 +25,7 @@ const ArticleCard: React.FC<Props> = ({href, imageSrc, title, date, contents}) =
   const matches = useMediaQuery(theme.breakpoints.up('sm'));
 
   return (
-    <Link href={href} passHref>
+    <Link href={href} passHref legacyBehavior>
       <MuiLink
         underline="none"
         sx={{

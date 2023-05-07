@@ -4,7 +4,7 @@ import {documentToReactComponents, Options} from '@contentful/rich-text-react-re
 import {BLOCKS, Document} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
-import {createClient, Entry} from 'contentful';
+import {Entry} from 'contentful';
 import {GetStaticProps} from 'next';
 import {FC, useMemo} from 'react';
 
@@ -23,15 +23,11 @@ import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
-import {withLinksCountToCategory} from '@/utils';
+import {client} from '@/utils/contentful';
+import {withLinksCountToCategory} from '@/utils/server';
 
 const Text = styled.p({
   lineHeight: '2',
-});
-
-const client = createClient({
-  space: process.env.CONTENTFUL_SPACE_ID ?? '',
-  accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
 });
 
 interface PrivacyPolicyContainerProps {

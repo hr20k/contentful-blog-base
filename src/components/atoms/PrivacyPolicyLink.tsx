@@ -4,7 +4,7 @@ import {FC} from 'react';
 
 const PrivacyPolicyLink: FC = () => {
   return (
-    <Link href="/privacy-policy" passHref>
+    <Link href="/privacy-policy" passHref legacyBehavior>
       <MuiLink>プライバシーポリシー</MuiLink>
     </Link>
   );

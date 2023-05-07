@@ -35,15 +35,19 @@ const Header: VFC<Props> = ({logoUrl}) => {
   return (
     <HeaderBar>
       <Logo href={siteUrl} passHref>
-        <a onClick={handleClick}>
+        <Link href="/" passHref legacyBehavior>
           <Image
             src={logoUrl ?? '/images/logo.webp'}
-            width="650px"
-            height="120px"
+            onClick={handleClick}
+            width={650}
+            height={120}
             alt={siteTitle}
-            objectFit="cover"
+            style={{
+              objectFit: 'cover',
+            }}
+            priority={false}
           />
-        </a>
+        </Link>
       </Logo>
     </HeaderBar>
   );

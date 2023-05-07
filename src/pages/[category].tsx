@@ -2,8 +2,7 @@ import {ParsedUrlQuery} from 'querystring';
 
 import {Block, Document, Inline} from '@contentful/rich-text-types';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
-import {createClient, Entry} from 'contentful';
-import {format} from 'date-fns';
+import {Entry} from 'contentful';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import {useMemo, VFC} from 'react';
 
@@ -23,12 +22,9 @@ import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
-import {withLinksCountToCategory} from '@/utils';
-
-const client = createClient({
-  space: process.env.CONTENTFUL_SPACE_ID ?? '',
-  accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
-});
+import {formatJstDateString} from '@/utils';
+import {client} from '@/utils/contentful';
+import {withLinksCountToCategory} from '@/utils/server';
 
 interface Params extends ParsedUrlQuery {
   category: string;
@@ -108,7 +104,7 @@ const CategoryContainer: VFC<ContainerProps> = ({
           href: `/${category.fields.slug}/${slug}`,
           imageSrc: thumbnail?.fields.file.url ?? defaultThumbnailUrl,
           title,
-          date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
+          date: formatJstDateString(new Date(createdAt)),
           contents: createContentsStr(contents),
         };
       }),

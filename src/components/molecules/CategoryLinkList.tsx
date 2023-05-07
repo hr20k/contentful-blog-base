@@ -34,7 +34,7 @@ const CategoryLinkList: FC<Props> = ({categories}) => {
               paddingLeft: '0px',
             }}
           >
-            <Link href={path} passHref>
+            <Link href={path} passHref legacyBehavior>
               <MuiLink onClick={handleClick}>{`${title} (${count})`}</MuiLink>
             </Link>
           </ListItem>

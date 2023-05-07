@@ -19,7 +19,7 @@ const Img = styled.img({
 
 const SmallArticleCard: React.FC<Props> = ({href, imageSrc, title, date}) => {
   return (
-    <Link href={href} passHref>
+    <Link href={href} passHref legacyBehavior>
       <MuiLink
         underline="none"
         sx={{

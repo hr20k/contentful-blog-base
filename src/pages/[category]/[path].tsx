@@ -6,10 +6,10 @@ import {BLOCKS, Document, INLINES} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
-import {createClient, Entry} from 'contentful';
-import {format} from 'date-fns';
+import {Entry} from 'contentful';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import * as React from 'react';
 import YouTube from 'react-youtube';
 
@@ -31,7 +31,9 @@ import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
-import {withLinksCountToCategory} from '@/utils';
+import {formatJstDateString} from '@/utils';
+import {client} from '@/utils/contentful';
+import {withLinksCountToCategory} from '@/utils/server';
 
 const Toc = styled.div({
   margin: '48px 0',
@@ -123,12 +125,11 @@ const ArticleContainer: React.FC<ContainerProps> = ({
       })),
     [withLinksCountCategories]
   );
-
   return (
     <Article
       path={path}
       title={article.fields.title}
-      date={`${format(new Date(article.sys.createdAt), 'yyyy年MM月dd日 HH:mm')}`}
+      date={formatJstDateString(new Date(article.sys.createdAt))}
       breadCrumbs={breadCrumbs}
       imageSrc={article.fields.thumbnail?.fields.file?.url}
       imageWidth={article.fields.thumbnail?.fields.file.details.image?.width}
@@ -146,11 +147,6 @@ const ArticleContainer: React.FC<ContainerProps> = ({
 
 const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) => {
   if (params?.path) {
-    const client = createClient({
-      space: process.env.CONTENTFUL_SPACE_ID ?? '',
-      accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
-    });
-
     const settings = await client.getEntries<SettingModel>({
       content_type: ContentType.Setting,
     });
@@ -198,10 +194,6 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
 };
 
 const getStaticPaths: GetStaticPaths<Params> = async () => {
-  const client = createClient({
-    space: process.env.CONTENTFUL_SPACE_ID ?? '',
-    accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
-  });
   const entries = await client.getEntries<ArticleModel>({
     content_type: ContentType.Article,
   });
@@ -349,7 +341,7 @@ const Article: React.FC<Props> = ({
           title={title}
           href={`${categorySlug}/${slug}`}
           imageSrc={imageSrc}
-          date={`${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`}
+          date={formatJstDateString(new Date(createdAt))}
         />
       );
     },
@@ -378,9 +370,9 @@ const Article: React.FC<Props> = ({
 
         const content = node.content?.slice(0, 1).shift();
         return (
-          <a href={node.data.uri} target="_blank" rel="noreferrer noopener">
+          <Link href={node.data.uri} target="_blank" rel="noreferrer noopener">
             {content?.value ?? node.data.uri}
-          </a>
+          </Link>
         );
       }
       return children;

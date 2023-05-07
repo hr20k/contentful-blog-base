@@ -1,7 +1,6 @@
 import {Block, Document, Inline} from '@contentful/rich-text-types';
 import {Box, Grid, useMediaQuery} from '@mui/material';
-import {createClient, Entry} from 'contentful';
-import {format} from 'date-fns';
+import {Entry} from 'contentful';
 import {GetStaticProps} from 'next';
 import {useMemo, VFC} from 'react';
 
@@ -19,7 +18,9 @@ import {NavHeader} from '@/components/molecules/NavHeader';
 import {ContentType} from '@/constants';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
-import {withLinksCountToCategory} from '@/utils';
+import {formatJstDateString} from '@/utils';
+import {client} from '@/utils/contentful';
+import {withLinksCountToCategory} from '@/utils/server';
 
 interface HomeContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
@@ -83,7 +84,7 @@ const HomeContainer: VFC<ContainerProps> = ({withLinksCountCategories, articles,
           href: `/${category.fields.slug}/${slug}`,
           imageSrc: thumbnail?.fields.file.url ?? defaultThumbnailUrl,
           title,
-          date: `${format(new Date(createdAt), 'yyyy年MM月dd日 HH:mm')}`,
+          date: formatJstDateString(new Date(createdAt)),
           contents: createContentsStr(contents),
         };
       }),
@@ -114,11 +115,6 @@ const HomeContainer: VFC<ContainerProps> = ({withLinksCountCategories, articles,
 };
 
 const getStaticProps: GetStaticProps<ContainerProps> = async () => {
-  const client = createClient({
-    space: process.env.CONTENTFUL_SPACE_ID ?? '',
-    accessToken: process.env.CONTENTFUL_ACCESS_KEY ?? '',
-  });
-
   const settings = await client.getEntries<SettingModel>({
     content_type: ContentType.Setting,
   });
