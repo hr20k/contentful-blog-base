@@ -1,9 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // target: 'experimental-serverless-trace',
   images: {
-    domains: ['images.ctfassets.net'],
+    domains: ['images.ctfassets.net', 'scdn.line-apps.com'],
   },
 };
 

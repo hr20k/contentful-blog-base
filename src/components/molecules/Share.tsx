@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import {Box, Stack} from '@mui/material';
-import Script from 'next/script';
+import Image from 'next/image';
+import Link from 'next/link';
 import * as React from 'react';
 import {
   TwitterShareButton,
@@ -35,58 +36,51 @@ const Share: React.FC<Props> = ({path = '', title, lineId}) => {
   });
 
   return (
-    <>
-      <Script
-        src="https://www.line-website.com/social-plugins/js/thirdparty/loader.min.js"
-        async
-        defer
-      ></Script>
-      <Stack height="200px" alignItems="center" justifyContent="center" gap="1rem">
-        {typeof lineId !== 'undefined' && (
-          <Box>
-            <div
-              className="line-it-button"
-              data-lang="ja"
-              data-type="friend"
-              data-env="REAL"
-              data-lineId={lineId}
-              style={{display: 'none'}}
-            ></div>
-          </Box>
-        )}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <ShareButton>
-            <TwitterShareButton url={url} title={displayTitle}>
-              <TwitterIcon size={30} round={true} />
-            </TwitterShareButton>
-          </ShareButton>
-
-          <ShareButton>
-            <FacebookShareButton url={url} title={displayTitle}>
-              <FacebookIcon size={30} round={true} />
-            </FacebookShareButton>
-          </ShareButton>
-
-          <ShareButton>
-            <LineShareButton url={url} title={displayTitle}>
-              <LineIcon size={30} round={true} />
-            </LineShareButton>
-          </ShareButton>
-
-          <ShareButton>
-            <HatenaShareButton url={url} title={displayTitle}>
-              <HatenaIcon size={30} round={true} />
-            </HatenaShareButton>
-          </ShareButton>
+    <Stack height="200px" alignItems="center" justifyContent="center" gap="1rem">
+      {typeof lineId !== 'undefined' && (
+        <Box>
+          <Link href="https://lin.ee/GzwmJX8" passHref>
+            <Image
+              src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png"
+              alt="友だち追加"
+              height="36"
+              width="116"
+            />
+          </Link>
         </Box>
-      </Stack>
-    </>
+      )}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <ShareButton>
+          <TwitterShareButton url={url} title={displayTitle}>
+            <TwitterIcon size={30} round={true} />
+          </TwitterShareButton>
+        </ShareButton>
+
+        <ShareButton>
+          <FacebookShareButton url={url} title={displayTitle}>
+            <FacebookIcon size={30} round={true} />
+          </FacebookShareButton>
+        </ShareButton>
+
+        <ShareButton>
+          <LineShareButton url={url} title={displayTitle}>
+            <LineIcon size={30} round={true} />
+          </LineShareButton>
+        </ShareButton>
+
+        <ShareButton>
+          <HatenaShareButton url={url} title={displayTitle}>
+            <HatenaIcon size={30} round={true} />
+          </HatenaShareButton>
+        </ShareButton>
+      </Box>
+    </Stack>
   );
 };
 
