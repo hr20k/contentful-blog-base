@@ -42,11 +42,9 @@ const Header: VFC<Props> = ({logoUrl}) => {
             width={650}
             height={120}
             alt={siteTitle}
-            sizes="100vw"
             style={{
               objectFit: 'cover',
-              maxWidth: '650px',
-              width: '100%',
+              maxWidth: '100%',
               height: 'auto',
             }}
             priority={false}
