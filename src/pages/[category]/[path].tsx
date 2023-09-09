@@ -219,20 +219,27 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
               const property = metas[i].getAttribute('property');
               const name = metas[i].getAttribute('name');
               const content = metas[i].getAttribute('content');
+
               metaData.title =
-                (property?.match('title') || name?.match('title')) && typeof content === 'string'
+                (property?.match('title') || name?.match('title')) &&
+                typeof content === 'string' &&
+                metaData.title === ''
                   ? content
                   : metaData.title;
               metaData.description =
                 (property?.match('description') || name?.match('description')) &&
-                typeof content === 'string'
+                typeof content === 'string' &&
+                metaData.description === ''
                   ? content
                   : metaData.description;
               metaData.image =
-                (property?.match('image') || name?.match('image')) && typeof content === 'string'
+                (property?.match('image') || name?.match('image')) &&
+                typeof content === 'string' &&
+                metaData.image === ''
                   ? content
                   : metaData.image;
             }
+
             // amazon は画像がメタタグから取得できないのでASINコードコードから取得する
             if (metaData.image === '' && metaData.url.match(/amazon/)) {
               const asin = link.match(/\/([A-Z0-9]{10})(?:[/?]|$)/);
