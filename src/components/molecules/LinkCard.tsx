@@ -23,6 +23,7 @@ const LinkCard: VFC<LinkCardProps> = ({description, image, title, url}) => {
           backgroundColor: 'white',
           borderRadius: '8px',
           padding: '12px',
+          minHeight: '100px',
         }}
       >
         <Box
