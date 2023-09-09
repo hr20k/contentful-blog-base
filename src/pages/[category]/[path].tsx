@@ -7,6 +7,7 @@ import styled from '@emotion/styled';
 import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
 import * as contentful from 'contentful';
 import {Entry} from 'contentful';
+import {JSDOM} from 'jsdom';
 import {GetStaticPaths, GetStaticProps} from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -23,6 +24,7 @@ import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
+import {LinkCard} from '@/components/molecules/LinkCard';
 import {NavHeader} from '@/components/molecules/NavHeader';
 import {Share} from '@/components/molecules/Share';
 import {SmallArticleCard} from '@/components/molecules/SmallArticleCard';
@@ -31,7 +33,7 @@ import {ContentType, siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
-import {formatJstDateString} from '@/utils';
+import {formatJstDateString, nonNullable} from '@/utils';
 import {client} from '@/utils/contentful';
 import {withLinksCountToCategory} from '@/utils/server';
 
@@ -56,6 +58,13 @@ const YouTubeEmbed = styled.div({
   },
 });
 
+interface LinkData {
+  url: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
 interface Params extends ParsedUrlQuery {
   category: string;
   path: string;
@@ -67,6 +76,7 @@ interface ArticleContainerProps {
   article: Entry<ArticleModel>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
   blogSetting: Entry<SettingModel>;
+  linksByUrl: Record<string, LinkData>;
 }
 
 interface ArticleProps {
@@ -79,6 +89,7 @@ interface ArticleProps {
   imageHeight?: number;
   contents: Document | null;
   categories: Array<CategoryLink>;
+  linksByUrl: Record<string, LinkData>;
   setting: {
     logoUrl: string;
     defaultThumbnailUrl: string;
@@ -96,6 +107,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
   article,
   withLinksCountCategories,
   blogSetting,
+  linksByUrl,
 }: ContainerProps) => {
   const breadCrumbs: Array<BreadCrumbsModel> = React.useMemo(() => {
     return [
@@ -136,6 +148,7 @@ const ArticleContainer: React.FC<ContainerProps> = ({
       imageHeight={article.fields.thumbnail?.fields.file.details.image?.height}
       contents={article.fields.contents}
       categories={categoryLinks}
+      linksByUrl={linksByUrl}
       setting={{
         logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
         defaultThumbnailUrl: `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`,
@@ -171,6 +184,75 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
     });
     const item = entry.items.shift();
 
+    const defaultThumbnailUrl =
+      typeof blogSetting !== 'undefined'
+        ? `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`
+        : '';
+
+    const contentsStr = JSON.stringify(item?.fields.contents?.content ?? {});
+    const matches = contentsStr.matchAll(/"nodeType":\s?"text",\s?"value":\s?"(https:\/\/[^"]+)"/g);
+    const urls: Array<string> = [];
+    for (const match of matches) {
+      if (match.length === 2) {
+        urls.push(match[1]);
+      }
+    }
+
+    const linkDataList = await Promise.all(
+      Array.from(new Set(urls)).map(async (link) => {
+        const metas = await fetch(link)
+          // 3. URLからtext/htmlデータを取得 ====================================
+          .then((res) => res.text())
+          .then((text) => {
+            const metaData: LinkData = {
+              url: link,
+              title: '',
+              description: '',
+              image: '',
+            };
+            // 4. 取得したtext/htmlデータから該当するmetaタグを取得 ==============
+            const doms = new JSDOM(text);
+            const metas = doms.window.document.getElementsByTagName('meta');
+
+            // 5. title, description, imageにあたる情報を取り出し配列として格納 ==
+            for (let i = 0; i < metas.length; i++) {
+              const property = metas[i].getAttribute('property');
+              const name = metas[i].getAttribute('name');
+              const content = metas[i].getAttribute('content');
+              metaData.title =
+                (property?.match('title') || name?.match('title')) && typeof content === 'string'
+                  ? content
+                  : metaData.title;
+              metaData.description =
+                (property?.match('description') || name?.match('description')) &&
+                typeof content === 'string'
+                  ? content
+                  : metaData.description;
+              metaData.image =
+                (property?.match('image') || name?.match('image')) && typeof content === 'string'
+                  ? content
+                  : metaData.image;
+            }
+            return metaData;
+          })
+          .catch((e) => {
+            console.log(e);
+            return null;
+          });
+        return metas;
+      })
+    );
+    const linksByUrl = linkDataList
+      .filter(nonNullable)
+      .reduce<Record<string, LinkData>>((acc, value) => {
+        if (value.url === '') {
+          return acc;
+        }
+        return {
+          ...acc,
+          [value.url]: {...value, image: value.image !== '' ? value.image : defaultThumbnailUrl},
+        };
+      }, {});
     if (
       typeof item !== 'undefined' &&
       typeof currentCategory !== 'undefined' &&
@@ -183,6 +265,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
           withLinksCountCategories: LinksCount,
           article: item,
           blogSetting,
+          linksByUrl,
         },
       };
     }
@@ -220,6 +303,7 @@ const Article: React.FC<Props> = ({
   imageHeight,
   contents,
   categories,
+  linksByUrl,
   setting,
 }: Props) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
@@ -366,6 +450,9 @@ const Article: React.FC<Props> = ({
               <YouTube videoId={matched[1]} />
             </YouTubeEmbed>
           );
+        }
+        if (typeof linksByUrl[node.data.uri] !== 'undefined') {
+          return <LinkCard {...linksByUrl[node.data.uri]} />;
         }
 
         const content = node.content?.slice(0, 1).shift();

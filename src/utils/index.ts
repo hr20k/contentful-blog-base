@@ -6,3 +6,7 @@ export const formatJstDateString = (
 ): string => {
   return formatInTimeZone(utcDate, 'Asia/Tokyo', dateFormat);
 };
+
+export const nonNullable = <T>(value: T | undefined | null): value is NonNullable<T> => {
+  return value !== null && value !== undefined;
+};
