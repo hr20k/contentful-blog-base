@@ -20,7 +20,7 @@ const LinkCard: VFC<LinkCardProps> = ({description, image, title, url}) => {
           cursor: 'pointer',
           display: 'grid',
           gridTemplateColumns: 'repeat(5, minmax(0, 1fr));',
-          backgroundColor: 'white',
+          backgroundColor: '#f1f1f1',
           borderRadius: '8px',
           padding: '12px',
           minHeight: '100px',
@@ -47,32 +47,46 @@ const LinkCard: VFC<LinkCardProps> = ({description, image, title, url}) => {
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'flex-start',
+            justifyContent: 'space-between',
             flexDirection: 'column',
             gridColumn: 'span 4 / span 4',
           }}
         >
+          <Box>
+            <Typography
+              sx={{
+                fontWeight: 'bold',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: '2',
+              }}
+            >
+              {title}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: '12px',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: '3',
+              }}
+            >
+              {description}
+            </Typography>
+          </Box>
           <Typography
-            sx={{
-              fontWeight: 'bold',
-              overflow: 'hidden',
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: '2',
-            }}
-          >
-            {title}
-          </Typography>
-          <Typography
+            variant="caption"
             sx={{
               fontSize: '12px',
               overflow: 'hidden',
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: '3',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
             }}
           >
-            {description}
+            {new URL(url).hostname}
           </Typography>
         </Box>
       </MuiLink>
