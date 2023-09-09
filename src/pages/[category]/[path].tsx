@@ -233,6 +233,14 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
                   ? content
                   : metaData.image;
             }
+            // amazon は画像がメタタグから取得できないのでASINコードコードから取得する
+            if (metaData.image === '' && metaData.url.match(/amazon/)) {
+              const asin = link.match(/\/([A-Z0-9]{10})(?:[/?]|$)/);
+              if (Array.isArray(asin) && asin.length >= 2) {
+                metaData.image = `https://images-na.ssl-images-amazon.com/images/P/${asin[1]}.09.TZZZZZZZ.jpg`;
+              }
+            }
+
             return metaData;
           })
           .catch((e) => {
@@ -242,6 +250,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
         return metas;
       })
     );
+
     const linksByUrl = linkDataList
       .filter(nonNullable)
       .reduce<Record<string, LinkData>>((acc, value) => {
@@ -253,6 +262,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
           [value.url]: {...value, image: value.image !== '' ? value.image : defaultThumbnailUrl},
         };
       }, {});
+
     if (
       typeof item !== 'undefined' &&
       typeof currentCategory !== 'undefined' &&
