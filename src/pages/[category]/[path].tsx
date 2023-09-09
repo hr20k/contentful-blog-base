@@ -190,11 +190,15 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
         : '';
 
     const contentsStr = JSON.stringify(item?.fields.contents?.content ?? {});
-    const matches = contentsStr.matchAll(/"nodeType":\s?"text",\s?"value":\s?"(https:\/\/[^"]+)"/g);
+    console.log(JSON.stringify(item?.fields.contents?.content ?? {}));
+
+    const matches = contentsStr.matchAll(
+      /("nodeType":\s?"text",\s?"value":\s?|"uri":\s?)"(https:\/\/[^"]+)"/g
+    );
     const urls: Array<string> = [];
     for (const match of matches) {
-      if (match.length === 2) {
-        urls.push(match[1]);
+      if (match.length === 3) {
+        urls.push(match[2]);
       }
     }
 
