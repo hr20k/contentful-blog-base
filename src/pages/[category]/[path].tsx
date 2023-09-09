@@ -190,8 +190,6 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
         : '';
 
     const contentsStr = JSON.stringify(item?.fields.contents?.content ?? {});
-    console.log(JSON.stringify(item?.fields.contents?.content ?? {}));
-
     const matches = contentsStr.matchAll(
       /("nodeType":\s?"text",\s?"value":\s?|"uri":\s?)"(https:\/\/[^"]+)"/g
     );

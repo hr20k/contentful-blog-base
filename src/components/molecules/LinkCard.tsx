@@ -54,11 +54,25 @@ const LinkCard: VFC<LinkCardProps> = ({description, image, title, url}) => {
           <Typography
             sx={{
               fontWeight: 'bold',
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: '2',
             }}
           >
             {title}
           </Typography>
-          <Typography sx={{fontSize: '12px'}}>{description}</Typography>
+          <Typography
+            sx={{
+              fontSize: '12px',
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: '3',
+            }}
+          >
+            {description}
+          </Typography>
         </Box>
       </MuiLink>
     </Link>
