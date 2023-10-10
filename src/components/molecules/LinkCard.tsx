@@ -1,4 +1,4 @@
-import {Box, Link as MuiLink, Typography} from '@mui/material';
+import {Box, Link as MuiLink, Typography, useMediaQuery} from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
 import {VFC} from 'react';
@@ -11,6 +11,7 @@ interface LinkCardProps {
 }
 
 const LinkCard: VFC<LinkCardProps> = ({description, image, title, url}) => {
+  const matches = useMediaQuery('(max-width:600px)');
   return (
     <Link href={url} passHref legacyBehavior>
       <MuiLink
@@ -19,7 +20,9 @@ const LinkCard: VFC<LinkCardProps> = ({description, image, title, url}) => {
         sx={{
           cursor: 'pointer',
           display: 'grid',
-          gridTemplateColumns: 'repeat(5, minmax(0, 1fr));',
+          gridTemplateColumns: matches
+            ? 'repeat(3, minmax(0, 1fr));'
+            : 'repeat(5, minmax(0, 1fr));',
           backgroundColor: '#f1f1f1',
           borderRadius: '8px',
           padding: '12px',
@@ -49,7 +52,7 @@ const LinkCard: VFC<LinkCardProps> = ({description, image, title, url}) => {
             display: 'flex',
             justifyContent: 'space-between',
             flexDirection: 'column',
-            gridColumn: 'span 4 / span 4',
+            gridColumn: matches ? 'span 2 / span 2' : 'span 4 / span 4',
           }}
         >
           <Box>
