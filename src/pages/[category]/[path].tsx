@@ -407,6 +407,12 @@ const Article: React.FC<Props> = ({
         );
       }
       if (content?.nodeType === 'text') {
+        // TODO: iframe の表示方法で別の良い手段があれば置き換える
+        const iFrameRegex = /<iframe\s+[^>]*src="([^"]*)"[^>]*>(?:<\/iframe>)?/i;
+        if (content.value && iFrameRegex.test(content.value)) {
+          return <div dangerouslySetInnerHTML={{__html: content.value}} />;
+        }
+
         return <Text>{children}</Text>;
       }
       return <p>{children}</p>;
