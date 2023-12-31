@@ -65,6 +65,7 @@ const ArticleCard: React.FC<Props> = ({href, imageSrc, title, date, contents}) =
                   WebkitBoxOrient: 'vertical',
                   WebkitLineClamp: '3',
                   overflow: 'hidden',
+                  overflowWrap: 'anywhere',
                 }}
               >
                 {contents}

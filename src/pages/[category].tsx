@@ -26,6 +26,8 @@ import {formatJstDateString} from '@/utils';
 import {client} from '@/utils/contentful';
 import {withLinksCountToCategory} from '@/utils/server';
 
+const URL_REGEX = /https?:\/\/[^\s]+/g;
+
 interface Params extends ParsedUrlQuery {
   category: string;
 }
@@ -68,7 +70,7 @@ const CategoryContainer: VFC<ContainerProps> = ({
     return content.content
       .map((c) => {
         if (c.nodeType === 'text') {
-          return c.value;
+          return typeof c.value === 'string' ? c.value.replaceAll(URL_REGEX, '') : '';
         }
         return getValue(c);
       })
@@ -80,7 +82,7 @@ const CategoryContainer: VFC<ContainerProps> = ({
     contents?.content.forEach((c) => {
       c.content.forEach((cc) => {
         if (cc.nodeType === 'text') {
-          contentsStr += cc.value;
+          contentsStr += typeof cc.value === 'string' ? cc.value.replaceAll(URL_REGEX, '') : '';
         } else {
           contentsStr += getValue(cc);
         }
