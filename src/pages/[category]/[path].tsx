@@ -412,10 +412,13 @@ const Article: React.FC<Props> = ({
         if (content.value && iFrameRegex.test(content.value)) {
           return <div dangerouslySetInnerHTML={{__html: content.value}} />;
         }
-
-        return <Text>{children}</Text>;
+        return typeof content.value === 'string' && content.value !== '' ? (
+          <Text>{children}</Text>
+        ) : (
+          children
+        );
       }
-      return <p>{children}</p>;
+      return children;
     },
     [BLOCKS.EMBEDDED_ASSET]: (node: any) => {
       const fields = node.data.target.fields;
