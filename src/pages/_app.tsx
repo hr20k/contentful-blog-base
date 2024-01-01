@@ -1,7 +1,7 @@
 import {CacheProvider, EmotionCache} from '@emotion/react';
 import {CssBaseline, ThemeProvider} from '@mui/material';
-import {DefaultSeo} from 'next-seo';
 import Head from 'next/head';
+import {DefaultSeo} from 'next-seo';
 import {useEffect} from 'react';
 
 import {siteDescription, siteTitle, siteUrl} from '@/constants';

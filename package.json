@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "engines": {
-    "node": "16.x"
+    "node": "20.x"
   },
   "dependencies": {
     "@contentful/rich-text-react-renderer": "^15.11.1",
