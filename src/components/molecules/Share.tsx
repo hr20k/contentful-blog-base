@@ -19,12 +19,12 @@ import {siteTitle, siteUrl} from '@/constants';
 interface ShareProps {
   path?: string;
   title?: string;
-  lineId?: string;
+  lineId: string | null;
 }
 
 type Props = ShareProps;
 
-const Share: React.FC<Props> = ({path = '', title, lineId}) => {
+const Share = ({path = '', title, lineId}: Props): JSX.Element => {
   const url = `${siteUrl}${path}`;
   const displayTitle = typeof title !== 'undefined' ? `${title} | ${siteTitle}` : siteTitle;
 
@@ -37,7 +37,7 @@ const Share: React.FC<Props> = ({path = '', title, lineId}) => {
 
   return (
     <Stack height="200px" alignItems="center" justifyContent="center" gap="1rem">
-      {typeof lineId !== 'undefined' && (
+      {lineId !== null && (
         <Box>
           <Link href="https://lin.ee/GzwmJX8" passHref>
             <Image

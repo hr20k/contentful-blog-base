@@ -60,7 +60,7 @@ interface ArticleContainerProps {
   category: Entry<CategoryEntrySkeleton, undefined, string>;
   article: Entry<ArticleEntrySkeleton, 'WITHOUT_UNRESOLVABLE_LINKS', string>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
-  lineId: string;
+  lineId: string | null;
   defaultThumbnailUrl: string;
   logoUrl: string;
   linksByUrl: Record<string, LinkData>;
@@ -80,7 +80,7 @@ interface ArticleProps {
   setting: {
     logoUrl: string;
     defaultThumbnailUrl: string;
-    lineId?: string;
+    lineId: string | null;
   };
 }
 
@@ -148,11 +148,15 @@ const ArticleContainer = ({
 };
 
 const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) => {
-  if (params?.path === undefined) {
+  if (params === undefined) {
     return {notFound: true};
   }
 
+  console.log({params});
+
   const {defaultThumbnailUrl, logoUrl, lineId} = await getSetting();
+  console.log({defaultThumbnailUrl, logoUrl, lineId});
+
   const item = await getArticleBySlug({
     slug: params.path,
     categorySlug: params.category,
@@ -164,7 +168,6 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
   if (
     currentCategory === undefined ||
     item === undefined ||
-    lineId === undefined ||
     defaultThumbnailUrl === undefined ||
     logoUrl === undefined
   ) {
@@ -260,7 +263,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
       category: currentCategory,
       withLinksCountCategories: LinksCount,
       article: item,
-      lineId,
+      lineId: lineId ?? null,
       defaultThumbnailUrl,
       logoUrl,
       linksByUrl,
