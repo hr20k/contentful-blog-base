@@ -152,11 +152,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
     return {notFound: true};
   }
 
-  console.log({params});
-
   const {defaultThumbnailUrl, logoUrl, lineId} = await getSetting();
-  console.log({defaultThumbnailUrl, logoUrl, lineId});
-
   const item = await getArticleBySlug({
     slug: params.path,
     categorySlug: params.category,

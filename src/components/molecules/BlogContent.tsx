@@ -17,6 +17,7 @@ const Text = styled.p({
   lineHeight: '2',
   overflowWrap: 'break-word',
   wordBreak: 'break-word',
+  whiteSpace: 'pre-wrap',
 });
 
 const YouTubeEmbed = styled.div({
