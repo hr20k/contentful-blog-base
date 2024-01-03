@@ -1,17 +1,20 @@
 import {ParsedUrlQuery} from 'querystring';
 
 import {Block, Document, Inline} from '@contentful/rich-text-types';
-import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
+import styled from '@emotion/styled';
+import {Box, Typography, useMediaQuery} from '@mui/material';
 import {Entry} from 'contentful';
 import {GetStaticPaths, GetStaticProps} from 'next';
-import {useMemo, VFC} from 'react';
+import {useMemo} from 'react';
 
+import {getArticlesByCategory} from '@/api/contentful/models/article';
 import {
-  CategoryModel,
-  ArticleModel,
   WithLinksCountCategory,
-  SettingModel,
+  CategoryEntrySkeleton,
+  ArticleEntrySkeleton,
 } from '@/api/contentful/models/blog';
+import {getCategories} from '@/api/contentful/models/category';
+import {getSetting} from '@/api/contentful/models/setting';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
@@ -28,15 +31,22 @@ import {withLinksCountToCategory} from '@/utils/server';
 
 const URL_REGEX = /https?:\/\/[^\s]+/g;
 
+const Grid = styled.div({
+  display: 'grid',
+  gridTemplateColumns: '1fr 270px',
+  gridGap: '40px',
+});
+
 interface Params extends ParsedUrlQuery {
   category: string;
 }
 
 interface CategoryContainerProps {
-  category: Entry<CategoryModel>;
+  category: Entry<CategoryEntrySkeleton, undefined, string>;
   withLinksCountCategories: Array<WithLinksCountCategory>;
-  articles: Array<Entry<ArticleModel>>;
-  blogSetting: Entry<SettingModel>;
+  articles: Array<Entry<ArticleEntrySkeleton, 'WITHOUT_UNRESOLVABLE_LINKS', string>>;
+  defaultThumbnailUrl: string;
+  logoUrl: string;
 }
 
 interface CategoryProps {
@@ -46,7 +56,7 @@ interface CategoryProps {
   categories: Array<CategoryLink>;
   links: Array<{
     href: string;
-    imageSrc?: string;
+    imageSrc: string;
     title: string;
     date: string;
     contents: string;
@@ -60,12 +70,13 @@ type ContainerProps = CategoryContainerProps;
 
 type Props = CategoryProps;
 
-const CategoryContainer: VFC<ContainerProps> = ({
+const CategoryContainer = ({
   category,
   withLinksCountCategories,
   articles,
-  blogSetting,
-}) => {
+  defaultThumbnailUrl,
+  logoUrl,
+}: ContainerProps): JSX.Element => {
   const getValue = (content: Block | Inline): string => {
     return content.content
       .map((c) => {
@@ -77,7 +88,7 @@ const CategoryContainer: VFC<ContainerProps> = ({
       .join('');
   };
 
-  const createContentsStr = (contents: Document | null): string => {
+  const createContentsStr = (contents: Document): string => {
     let contentsStr = '';
     contents?.content.forEach((c) => {
       c.content.forEach((cc) => {
@@ -91,23 +102,15 @@ const CategoryContainer: VFC<ContainerProps> = ({
     return contentsStr;
   };
 
-  const defaultThumbnailUrl = useMemo<string | undefined>(
-    () =>
-      typeof blogSetting !== 'undefined'
-        ? `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`
-        : undefined,
-    [blogSetting]
-  );
-
   const links = useMemo(
     () =>
       articles.map(({fields: {title, slug, thumbnail, contents}, sys: {createdAt}}) => {
         return {
           href: `/${category.fields.slug}/${slug}`,
-          imageSrc: thumbnail?.fields.file.url ?? defaultThumbnailUrl,
+          imageSrc: thumbnail?.fields.file?.url ?? defaultThumbnailUrl,
           title,
           date: formatJstDateString(new Date(createdAt)),
-          contents: createContentsStr(contents),
+          contents: contents ? createContentsStr(contents) : '',
         };
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -147,45 +150,33 @@ const CategoryContainer: VFC<ContainerProps> = ({
       breadCrumbs={breadCrumbs}
       categories={categoryLinks}
       links={links}
-      setting={{
-        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
-      }}
+      setting={{logoUrl}}
     />
   );
 };
 
 const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) => {
-  if (typeof params === 'undefined') {
+  if (params === undefined) {
     return {
       notFound: true,
     };
   }
 
-  const settings = await client.getEntries<SettingModel>({
-    content_type: ContentType.Setting,
-  });
-  const blogSetting = settings.items.pop();
+  const {defaultThumbnailUrl, logoUrl} = await getSetting();
 
-  const categoryEntries = await client.getEntries<CategoryModel>({
-    content_type: ContentType.Category,
-    order: 'fields.order',
-  });
+  const categoryEntries = await getCategories();
   const LinksCount = await withLinksCountToCategory(categoryEntries);
   const currentCategory = categoryEntries.items.find(({fields}) => fields.slug === params.category);
 
-  if (typeof currentCategory !== 'undefined' && typeof blogSetting !== 'undefined') {
-    const entry = await client.getEntries<ArticleModel>({
-      content_type: ContentType.Article,
-      'fields.category.sys.contentType.sys.id': ContentType.Category,
-      'fields.category.fields.slug': params.category,
-    });
-
+  if (currentCategory !== undefined && defaultThumbnailUrl !== undefined && logoUrl !== undefined) {
+    const entry = await getArticlesByCategory({categorySlug: currentCategory.fields.slug});
     return {
       props: {
         category: currentCategory,
         withLinksCountCategories: LinksCount,
         articles: entry.items,
-        blogSetting,
+        defaultThumbnailUrl,
+        logoUrl,
       },
     };
   }
@@ -196,7 +187,7 @@ const getStaticProps: GetStaticProps<ContainerProps, Params> = async ({params}) 
 };
 
 const getStaticPaths: GetStaticPaths<Params> = async () => {
-  const entries = await client.getEntries<CategoryModel>({
+  const entries = await client.getEntries<CategoryEntrySkeleton>({
     content_type: ContentType.Category,
   });
   const paths = entries.items.map((item) => ({
@@ -211,14 +202,14 @@ const getStaticPaths: GetStaticPaths<Params> = async () => {
   };
 };
 
-const Category: React.FC<Props> = ({
+const Category = ({
   path,
   categoryTitle,
   breadCrumbs,
   links,
   categories,
   setting,
-}) => {
+}: Props): JSX.Element => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
@@ -232,15 +223,16 @@ const Category: React.FC<Props> = ({
         />
         <Box
           sx={{
-            width: matches ? '900px' : 'auto',
-            margin: matches ? '48px auto 48px' : '48px 16px',
+            width: matches ? '900px' : undefined,
+            padding: matches ? '48px 24px' : '48px 16px',
+            margin: '0 auto',
           }}
         >
-          <Grid container spacing={5}>
-            <Grid item sm={12} md={8}>
-              <Box>
+          <Grid css={{gridTemplateColumns: matches ? undefined : '1fr'}}>
+            <div>
+              <div>
                 <BreadCrumbs breadCrumbs={breadCrumbs} />
-              </Box>
+              </div>
               <Typography
                 variant="h1"
                 sx={{
@@ -269,8 +261,8 @@ const Category: React.FC<Props> = ({
                   />
                 </Box>
               ))}
-            </Grid>
-            <Grid item xs={12} sm={12} md={4}>
+            </div>
+            <div>
               <Box
                 sx={{
                   backgroundColor: theme.palette.secondary.main,
@@ -288,7 +280,7 @@ const Category: React.FC<Props> = ({
               >
                 <PrivacyPolicyLink />
               </Box>
-            </Grid>
+            </div>
           </Grid>
         </Box>
       </main>

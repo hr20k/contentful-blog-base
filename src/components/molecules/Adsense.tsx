@@ -1,7 +1,7 @@
 import {useRouter} from 'next/router';
-import {FC, useEffect} from 'react';
+import {useEffect} from 'react';
 
-const Adsense: FC = () => {
+const Adsense = (): JSX.Element => {
   const {asPath} = useRouter();
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import createEmotionServer from '@emotion/server/create-instance';
 import {RenderPageResult} from 'next/dist/shared/lib/utils';
 import Document, {DocumentContext, Html, Head, Main, NextScript} from 'next/document';
-import * as React from 'react';
+import {Children} from 'react';
 
 import {createEmotionCache} from '@/createEmotionCache';
 import {existsGaId, GA_ID} from '@/libs/gtag';
@@ -33,8 +33,7 @@ class MyDocument extends Document {
         enhanceApp:
           (App: any) =>
           // eslint-disable-next-line react/display-name
-          (props): JSX.Element =>
-            <App emotionCache={cache} {...props} />,
+          (props): JSX.Element => <App emotionCache={cache} {...props} />,
       });
 
     const initialProps = await Document.getInitialProps(ctx);
@@ -50,7 +49,7 @@ class MyDocument extends Document {
 
     return {
       ...initialProps,
-      styles: [...React.Children.toArray(initialProps.styles), ...emotionStyleTags],
+      styles: [...Children.toArray(initialProps.styles), ...emotionStyleTags],
     };
   }
 

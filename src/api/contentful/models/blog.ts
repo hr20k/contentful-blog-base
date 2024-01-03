@@ -1,36 +1,52 @@
-import {Document} from '@contentful/rich-text-types';
-import {Asset, Entry, EntryFields} from 'contentful';
+import {Entry, EntryFieldTypes} from 'contentful';
 
-interface ArticleModel {
-  slug: EntryFields.Text;
-  title: EntryFields.Text;
-  category: Entry<CategoryModel>;
-  thumbnail: Asset | null;
-  contents: Document | null;
-}
+type ArticleEntrySkeleton = {
+  contentTypeId: 'article';
+  fields: {
+    slug: EntryFieldTypes.Text;
+    title: EntryFieldTypes.Text;
+    category: EntryFieldTypes.EntryLink<CategoryEntrySkeleton>;
+    thumbnail?: EntryFieldTypes.AssetLink;
+    contents?: EntryFieldTypes.RichText;
+  };
+};
 
-interface CategoryModel {
-  slug: EntryFields.Text;
-  name: EntryFields.Text;
-  order?: number;
-  id: string;
-}
+type CategoryEntrySkeleton = {
+  contentTypeId: 'category';
+  fields: {
+    slug: EntryFieldTypes.Text;
+    name: EntryFieldTypes.Text;
+    order?: EntryFieldTypes.Number;
+  };
+};
 
-interface PrivacyPolicyModel {
-  contents: Document | null;
-}
+type PrivacyPolicyEntrySkeleton = {
+  contentTypeId: 'privacyPolicy';
+  fields: {
+    contents?: EntryFieldTypes.RichText;
+  };
+};
 
 interface WithLinksCountCategory {
-  category: Entry<CategoryModel>;
+  category: Entry<CategoryEntrySkeleton, undefined, string>;
   count: number;
 }
 
-interface SettingModel {
-  title: string;
-  description: string;
-  logo: Asset;
-  defaultThumbnail: Asset;
-  lineId?: string;
-}
+type SettingEntrySkeleton = {
+  contentTypeId: 'setting';
+  fields: {
+    title: EntryFieldTypes.Text;
+    description: EntryFieldTypes.Text;
+    logo: EntryFieldTypes.AssetLink;
+    defaultThumbnail: EntryFieldTypes.AssetLink;
+    lineId?: EntryFieldTypes.Text;
+  };
+};
 
-export type {ArticleModel, CategoryModel, PrivacyPolicyModel, WithLinksCountCategory, SettingModel};
+export type {
+  ArticleEntrySkeleton,
+  CategoryEntrySkeleton,
+  PrivacyPolicyEntrySkeleton,
+  WithLinksCountCategory,
+  SettingEntrySkeleton,
+};

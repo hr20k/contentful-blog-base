@@ -17,11 +17,11 @@ interface MyAppProps extends AppProps {
   emotionCache?: EmotionCache;
 }
 
-const App: React.FC<MyAppProps> = ({
+const App = ({
   Component,
   emotionCache = clientSideEmotionCache,
   pageProps,
-}) => {
+}: MyAppProps): JSX.Element => {
   usePageView();
 
   useEffect(() => {

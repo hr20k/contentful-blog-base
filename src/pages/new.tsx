@@ -1,34 +1,38 @@
 import {Block, Document, Inline} from '@contentful/rich-text-types';
-import {Box, Grid, useMediaQuery} from '@mui/material';
+import styled from '@emotion/styled';
+import {Box, useMediaQuery} from '@mui/material';
 import {Entry} from 'contentful';
 import {GetStaticProps} from 'next';
-import {useMemo, VFC} from 'react';
+import {useMemo} from 'react';
 
-import {
-  CategoryModel,
-  ArticleModel,
-  WithLinksCountCategory,
-  SettingModel,
-} from '@/api/contentful/models/blog';
+import {getNewArticles} from '@/api/contentful/models/article';
+import {WithLinksCountCategory, ArticleEntrySkeleton} from '@/api/contentful/models/blog';
+import {getCategories} from '@/api/contentful/models/category';
+import {getSetting} from '@/api/contentful/models/setting';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {ArticleCard} from '@/components/molecules/ArticleCard';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {NavHeader} from '@/components/molecules/NavHeader';
-import {ContentType} from '@/constants';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
 import {formatJstDateString} from '@/utils';
-import {client} from '@/utils/contentful';
 import {withLinksCountToCategory} from '@/utils/server';
 
-interface HomeContainerProps {
+const Grid = styled.div({
+  display: 'grid',
+  gridTemplateColumns: '1fr 270px',
+  gridGap: '40px',
+});
+
+interface NewContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
-  articles: Array<Entry<ArticleModel>>;
-  blogSetting: Entry<SettingModel>;
+  articles: Array<Entry<ArticleEntrySkeleton, 'WITHOUT_UNRESOLVABLE_LINKS', string>>;
+  defaultThumbnailUrl: string;
+  logoUrl: string;
 }
 
-interface HomeProps {
+interface NewProps {
   categories: Array<CategoryLink>;
   links: Array<{
     href: string;
@@ -42,11 +46,16 @@ interface HomeProps {
   };
 }
 
-type ContainerProps = HomeContainerProps;
+type ContainerProps = NewContainerProps;
 
-type Props = HomeProps;
+type Props = NewProps;
 
-const HomeContainer: VFC<ContainerProps> = ({withLinksCountCategories, articles, blogSetting}) => {
+const NewContainer = ({
+  withLinksCountCategories,
+  articles,
+  defaultThumbnailUrl,
+  logoUrl,
+}: ContainerProps): JSX.Element => {
   const getValue = (content: Block | Inline): string => {
     return content.content
       .map((c) => {
@@ -72,20 +81,15 @@ const HomeContainer: VFC<ContainerProps> = ({withLinksCountCategories, articles,
     return contentsStr;
   };
 
-  const defaultThumbnailUrl = useMemo<string>(
-    () => `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`,
-    [blogSetting]
-  );
-
   const links = useMemo(
     () =>
       articles.map(({fields: {title, slug, thumbnail, category, contents}, sys: {createdAt}}) => {
         return {
-          href: `/${category.fields.slug}/${slug}`,
-          imageSrc: thumbnail?.fields.file.url ?? defaultThumbnailUrl,
+          href: `/${category?.fields.slug}/${slug}`,
+          imageSrc: thumbnail?.fields.file?.url ?? defaultThumbnailUrl,
           title,
           date: formatJstDateString(new Date(createdAt)),
-          contents: createContentsStr(contents),
+          contents: contents ? createContentsStr(contents) : '',
         };
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -103,38 +107,23 @@ const HomeContainer: VFC<ContainerProps> = ({withLinksCountCategories, articles,
     [withLinksCountCategories]
   );
 
-  return (
-    <Home
-      links={links}
-      categories={categoryLinks}
-      setting={{
-        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
-      }}
-    />
-  );
+  return <New links={links} categories={categoryLinks} setting={{logoUrl}} />;
 };
 
 const getStaticProps: GetStaticProps<ContainerProps> = async () => {
-  const settings = await client.getEntries<SettingModel>({
-    content_type: ContentType.Setting,
-  });
-  const blogSetting = settings.items.pop();
+  const {defaultThumbnailUrl, logoUrl} = await getSetting();
 
-  const entry = await client.getEntries<ArticleModel>({
-    content_type: ContentType.Article,
-  });
-  const categoryEntries = await client.getEntries<CategoryModel>({
-    content_type: ContentType.Category,
-    order: 'fields.order',
-  });
-  const Linkscount = await withLinksCountToCategory(categoryEntries);
+  const entry = await getNewArticles({limit: 10});
+  const categoryEntries = await getCategories();
+  const LinksCount = await withLinksCountToCategory(categoryEntries);
 
-  if (typeof blogSetting !== 'undefined') {
+  if (defaultThumbnailUrl !== undefined && logoUrl !== undefined) {
     return {
       props: {
-        withLinksCountCategories: Linkscount,
+        withLinksCountCategories: LinksCount,
         articles: entry.items,
-        blogSetting,
+        defaultThumbnailUrl,
+        logoUrl,
       },
     };
   }
@@ -144,12 +133,12 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
   };
 };
 
-const Home: React.FC<Props> = ({links, categories, setting}) => {
+const New = ({links, categories, setting}: Props): JSX.Element => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
     <>
-      <Seo />
+      <Seo title="新着記事" />
       <main>
         <NavHeader
           items={categories.map(({title, path}) => ({id: path, href: path, label: title}))}
@@ -158,12 +147,13 @@ const Home: React.FC<Props> = ({links, categories, setting}) => {
         />
         <Box
           sx={{
-            width: matches ? '900px' : 'auto',
-            margin: matches ? '48px auto' : '48px 16px',
+            width: matches ? '900px' : undefined,
+            padding: matches ? '48px 24px' : '48px 16px',
+            margin: '0 auto',
           }}
         >
-          <Grid container spacing={5}>
-            <Grid item sm={12} md={8}>
+          <Grid css={{gridTemplateColumns: matches ? undefined : '1fr'}}>
+            <div>
               {links.map(({href, title, date, imageSrc, contents}) => (
                 <Box
                   key={href}
@@ -184,8 +174,8 @@ const Home: React.FC<Props> = ({links, categories, setting}) => {
                   />
                 </Box>
               ))}
-            </Grid>
-            <Grid item xs={12} sm={12} md={4}>
+            </div>
+            <div>
               <Box
                 sx={{
                   backgroundColor: theme.palette.secondary.main,
@@ -203,7 +193,7 @@ const Home: React.FC<Props> = ({links, categories, setting}) => {
               >
                 <PrivacyPolicyLink />
               </Box>
-            </Grid>
+            </div>
           </Grid>
         </Box>
       </main>
@@ -211,6 +201,5 @@ const Home: React.FC<Props> = ({links, categories, setting}) => {
   );
 };
 
-export type {HomeContainerProps, HomeProps};
 export {getStaticProps};
-export default HomeContainer;
+export default NewContainer;

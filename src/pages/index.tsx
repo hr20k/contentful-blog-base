@@ -1,31 +1,35 @@
-import {Box, Grid, useMediaQuery} from '@mui/material';
+import styled from '@emotion/styled';
+import {Box, useMediaQuery} from '@mui/material';
 import {Entry} from 'contentful';
 import {GetStaticProps} from 'next';
 import {useMemo} from 'react';
 
-import {
-  CategoryModel,
-  ArticleModel,
-  WithLinksCountCategory,
-  SettingModel,
-} from '@/api/contentful/models/blog';
+import {getAllArticles} from '@/api/contentful/models/article';
+import {WithLinksCountCategory, ArticleEntrySkeleton} from '@/api/contentful/models/blog';
+import {getCategories} from '@/api/contentful/models/category';
+import {getSetting} from '@/api/contentful/models/setting';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
 import {Adsense} from '@/components/molecules/Adsense';
 import {CategoryCard} from '@/components/molecules/CategoryCard';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {NavHeader} from '@/components/molecules/NavHeader';
-import {ContentType} from '@/constants';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
 import {formatJstDateString} from '@/utils';
-import {client} from '@/utils/contentful';
 import {withLinksCountToCategory} from '@/utils/server';
+
+const Grid = styled.div({
+  display: 'grid',
+  gridTemplateColumns: '1fr 270px',
+  gridGap: '40px',
+});
 
 interface HomeContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
-  articles: Array<Entry<ArticleModel>>;
-  blogSetting: Entry<SettingModel>;
+  articles: Array<Entry<ArticleEntrySkeleton, 'WITHOUT_UNRESOLVABLE_LINKS', string>>;
+  defaultThumbnailUrl: string;
+  logoUrl: string;
 }
 
 interface HomeProps {
@@ -48,11 +52,12 @@ type ContainerProps = HomeContainerProps;
 
 type Props = HomeProps;
 
-const HomeContainer: React.FC<ContainerProps> = ({
+const HomeContainer = ({
   withLinksCountCategories,
   articles,
-  blogSetting,
-}) => {
+  defaultThumbnailUrl,
+  logoUrl,
+}: ContainerProps): JSX.Element => {
   const categoryLinks = useMemo<Array<CategoryLink>>(
     () =>
       withLinksCountCategories.map(({category, count}) => ({
@@ -62,11 +67,6 @@ const HomeContainer: React.FC<ContainerProps> = ({
         id: category.sys.id,
       })),
     [withLinksCountCategories]
-  );
-
-  const defaultThumbnailUrl = useMemo<string>(
-    () => `https:${blogSetting.fields.defaultThumbnail.fields.file.url}`,
-    [blogSetting]
   );
 
   const itemLinks = useMemo<
@@ -88,64 +88,63 @@ const HomeContainer: React.FC<ContainerProps> = ({
           title: '新着記事',
           id: '',
         },
-        items: articles.map(({fields: {title, slug, thumbnail, category}, sys: {createdAt}}) => {
-          return {
-            href: `/${category.fields.slug}/${slug}`,
-            imageSrc: thumbnail?.fields.file.url ?? defaultThumbnailUrl,
-            title,
-            date: formatJstDateString(new Date(createdAt)),
-          };
-        }),
+        items: articles.flatMap(
+          ({fields: {title, slug, thumbnail, category}, sys: {createdAt}}) => {
+            if (category === undefined) {
+              return [];
+            }
+            return [
+              {
+                href: `/${category.fields.slug}/${slug}`,
+                imageSrc: thumbnail?.fields.file?.url ?? defaultThumbnailUrl,
+                title,
+                date: formatJstDateString(new Date(createdAt)),
+              },
+            ];
+          }
+        ),
       },
       ...categoryLinks.map((link) => ({
         category: link,
         items: articles
-          .filter(({fields: {category}}) => `/${category.fields.slug}` === link.path)
-          .map(({fields: {title, slug, thumbnail, category}, sys: {createdAt}}) => {
-            return {
-              href: `/${category.fields.slug}/${slug}`,
-              imageSrc: thumbnail?.fields.file.url ?? defaultThumbnailUrl,
-              title,
-              date: formatJstDateString(new Date(createdAt)),
-            };
+          .filter(
+            ({fields: {category}}) =>
+              category !== undefined && `/${category.fields.slug}` === link.path
+          )
+          .flatMap(({fields: {title, slug, thumbnail, category}, sys: {createdAt}}) => {
+            if (category === undefined) {
+              return [];
+            }
+            return [
+              {
+                href: `/${category.fields.slug}/${slug}`,
+                imageSrc: thumbnail?.fields.file?.url ?? defaultThumbnailUrl,
+                title,
+                date: formatJstDateString(new Date(createdAt)),
+              },
+            ];
           }),
       })),
     ],
     [articles, categoryLinks, defaultThumbnailUrl]
   );
 
-  return (
-    <Home
-      links={itemLinks}
-      categories={categoryLinks}
-      setting={{
-        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
-      }}
-    />
-  );
+  return <Home links={itemLinks} categories={categoryLinks} setting={{logoUrl}} />;
 };
 
 const getStaticProps: GetStaticProps<ContainerProps> = async () => {
-  const settings = await client.getEntries<SettingModel>({
-    content_type: ContentType.Setting,
-  });
-  const blogSetting = settings.items.pop();
-
-  const entry = await client.getEntries<ArticleModel>({
-    content_type: ContentType.Article,
-  });
-  const categoryEntries = await client.getEntries<CategoryModel>({
-    content_type: ContentType.Category,
-    order: 'fields.order',
-  });
+  const {defaultThumbnailUrl, logoUrl} = await getSetting();
+  const entry = await getAllArticles();
+  const categoryEntries = await getCategories();
   const LinksCount = await withLinksCountToCategory(categoryEntries);
 
-  if (typeof blogSetting !== 'undefined') {
+  if (defaultThumbnailUrl !== undefined && logoUrl !== undefined) {
     return {
       props: {
         withLinksCountCategories: LinksCount,
         articles: entry.items,
-        blogSetting,
+        defaultThumbnailUrl,
+        logoUrl,
       },
     };
   }
@@ -154,7 +153,7 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
   };
 };
 
-const Home: React.FC<Props> = ({links, categories, setting}) => {
+const Home = ({links, categories, setting}: Props): JSX.Element => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
   const msMatches = useMediaQuery(theme.breakpoints.up('sm'));
 
@@ -167,30 +166,35 @@ const Home: React.FC<Props> = ({links, categories, setting}) => {
           currentPath="/"
           logoUrl={setting.logoUrl}
         />
-        <Box
-          sx={{
-            // width: matches ? '1200px' : 'auto',
-            maxWidth: '1200px',
-            margin: matches ? '48px auto' : '48px 16px',
+        <div
+          style={{
+            maxWidth: matches ? '1200px' : undefined,
+            padding: matches ? '48px 24px' : '48px 16px',
+            margin: '0 auto',
+            overflowX: 'hidden',
           }}
         >
-          <Grid container spacing={5}>
-            <Grid item sm={12} md={8}>
-              <Grid container>
-                {links.map(({category, items}) => (
-                  <Grid
-                    key={category.path}
-                    item
-                    xs={12}
-                    sm={6}
-                    padding={msMatches ? '8px 8px 16px' : '8px 0 16px'}
-                  >
-                    <CategoryCard category={category} items={items} />
-                  </Grid>
-                ))}
-              </Grid>
-            </Grid>
-            <Grid item xs={12} sm={12} md={4}>
+          <Grid css={{gridTemplateColumns: matches ? undefined : '1fr'}}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: msMatches ? '1fr 1fr' : '1fr',
+                gap: '16px',
+              }}
+            >
+              {links.map(({category, items}) => (
+                <Box
+                  key={category.path}
+                  sx={{
+                    flex: 1,
+                    minWidth: '150px',
+                  }}
+                >
+                  <CategoryCard category={category} items={items} />
+                </Box>
+              ))}
+            </Box>
+            <div>
               <Box
                 sx={{
                   backgroundColor: theme.palette.secondary.main,
@@ -209,9 +213,9 @@ const Home: React.FC<Props> = ({links, categories, setting}) => {
                 <PrivacyPolicyLink />
               </Box>
               <Adsense />
-            </Grid>
+            </div>
           </Grid>
-        </Box>
+        </div>
       </main>
     </>
   );

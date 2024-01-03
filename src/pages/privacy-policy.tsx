@@ -1,46 +1,50 @@
-import {createHash} from 'crypto';
-
-import {documentToReactComponents, Options} from '@contentful/rich-text-react-renderer';
-import {BLOCKS, Document} from '@contentful/rich-text-types';
+import {Document} from '@contentful/rich-text-types';
 import styled from '@emotion/styled';
-import {Box, Grid, Typography, useMediaQuery} from '@mui/material';
+import {Box, Typography, useMediaQuery} from '@mui/material';
 import {Entry} from 'contentful';
 import {GetStaticProps} from 'next';
-import {FC, useMemo} from 'react';
+import {useMemo} from 'react';
 
-import {
-  CategoryModel,
-  PrivacyPolicyModel,
-  SettingModel,
-  WithLinksCountCategory,
-} from '@/api/contentful/models/blog';
+import {PrivacyPolicyEntrySkeleton, WithLinksCountCategory} from '@/api/contentful/models/blog';
+import {getCategories} from '@/api/contentful/models/category';
+import {getPrivacyPolicy} from '@/api/contentful/models/privacyPolicy';
+import {getSetting} from '@/api/contentful/models/setting';
 import {PrivacyPolicyLink} from '@/components/atoms/PrivacyPolicyLink';
 import {Seo} from '@/components/atoms/Seo';
+import {BlogContent} from '@/components/molecules/BlogContent';
 import {BreadCrumbs} from '@/components/molecules/BreadCrumbs';
 import {CategoryLinkList} from '@/components/molecules/CategoryLinkList';
 import {NavHeader} from '@/components/molecules/NavHeader';
-import {ContentType, siteTitle} from '@/constants';
+import {TableOfContents} from '@/components/molecules/TableOfContents';
+import {siteTitle} from '@/constants';
 import {BreadCrumbsModel} from '@/libs/models/BreadCrumbsModel';
 import {CategoryLink} from '@/libs/models/CategoryLink';
 import {theme} from '@/styles/theme/theme';
-import {client} from '@/utils/contentful';
 import {withLinksCountToCategory} from '@/utils/server';
 
-const Text = styled.p({
-  lineHeight: '2',
+const Toc = styled.div({
+  margin: '48px 0',
+});
+
+const Grid = styled.div({
+  display: 'grid',
+  gridTemplateColumns: '1fr 270px',
+  gridGap: '40px',
 });
 
 interface PrivacyPolicyContainerProps {
   withLinksCountCategories: Array<WithLinksCountCategory>;
-  privacyPolicyDoc: Entry<PrivacyPolicyModel>;
-  blogSetting: Entry<SettingModel>;
+  privacyPolicyDoc: Entry<PrivacyPolicyEntrySkeleton, undefined, string>;
+  defaultThumbnailUrl: string;
+  logoUrl: string;
 }
 
 interface PrivacyPolicyProps {
   breadCrumbs: Array<BreadCrumbsModel>;
   categories: Array<CategoryLink>;
-  contents: Document | null;
+  contents?: Document;
   setting: {
+    defaultThumbnailUrl: string;
     logoUrl: string;
   };
 }
@@ -48,11 +52,12 @@ interface PrivacyPolicyProps {
 type ContainerProps = PrivacyPolicyContainerProps;
 type Props = PrivacyPolicyProps;
 
-const PrivacyPolicyContainer: FC<ContainerProps> = ({
+const PrivacyPolicyContainer = ({
   withLinksCountCategories,
   privacyPolicyDoc,
-  blogSetting,
-}) => {
+  defaultThumbnailUrl,
+  logoUrl,
+}: ContainerProps): JSX.Element => {
   const categoryLinks = useMemo(
     () =>
       withLinksCountCategories.map(({category, count}) => ({
@@ -82,32 +87,18 @@ const PrivacyPolicyContainer: FC<ContainerProps> = ({
       categories={categoryLinks}
       breadCrumbs={breadCrumbs}
       contents={privacyPolicyDoc.fields.contents}
-      setting={{
-        logoUrl: `https:${blogSetting.fields.logo.fields.file.url}`,
-      }}
+      setting={{logoUrl, defaultThumbnailUrl}}
     />
   );
 };
 
 const getStaticProps: GetStaticProps<ContainerProps> = async () => {
-  const settings = await client.getEntries<SettingModel>({
-    content_type: ContentType.Setting,
-  });
-  const blogSetting = settings.items.pop();
-
-  const categoryEntries = await client.getEntries<CategoryModel>({
-    content_type: ContentType.Category,
-    order: 'fields.order',
-  });
+  const {logoUrl, defaultThumbnailUrl} = await getSetting();
+  const categoryEntries = await getCategories();
   const LinksCount = await withLinksCountToCategory(categoryEntries);
+  const item = await getPrivacyPolicy();
 
-  const entry = await client.getEntries<PrivacyPolicyModel>({
-    content_type: ContentType.PrivacyPolicy,
-    limit: 1,
-  });
-  const item = entry.items.shift();
-
-  if (typeof item === 'undefined' || typeof blogSetting === 'undefined') {
+  if (item === undefined || defaultThumbnailUrl === undefined || logoUrl === undefined) {
     return {
       notFound: true,
     };
@@ -117,62 +108,14 @@ const getStaticProps: GetStaticProps<ContainerProps> = async () => {
     props: {
       withLinksCountCategories: LinksCount,
       privacyPolicyDoc: item,
-      blogSetting,
+      defaultThumbnailUrl,
+      logoUrl,
     },
   };
 };
 
-const PrivacyPolicy: FC<Props> = ({categories, breadCrumbs, contents, setting}) => {
+const PrivacyPolicy = ({categories, breadCrumbs, contents, setting}: Props): JSX.Element => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
-
-  const options: Options = {
-    renderNode: {
-      [BLOCKS.HEADING_2]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (content?.nodeType === 'text') {
-          const anchor = createHash('md5').update(content.value).digest('hex');
-          return (
-            <Typography id={anchor} variant="h2" sx={{marginTop: '32px', marginBottom: '16px'}}>
-              {children}
-            </Typography>
-          );
-        }
-        return children;
-      },
-      [BLOCKS.HEADING_3]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (content?.nodeType === 'text') {
-          const anchor = createHash('md5').update(content.value).digest('hex');
-          return (
-            <Typography id={anchor} variant="h3" sx={{borderBottom: 'solid 2px', lineHeight: 2}}>
-              {children}
-            </Typography>
-          );
-        }
-        return children;
-      },
-      [BLOCKS.PARAGRAPH]: (node, children) => {
-        const content = node.content.slice(0, 1).shift();
-        if (
-          typeof content !== 'undefined' &&
-          'marks' in content &&
-          content.marks.find((x) => x.type === 'code')
-        ) {
-          return (
-            <div>
-              <pre>
-                <code>{children}</code>
-              </pre>
-            </div>
-          );
-        }
-        if (content?.nodeType === 'text') {
-          return <Text>{children}</Text>;
-        }
-        return <p>{children}</p>;
-      },
-    },
-  };
 
   return (
     <>
@@ -189,11 +132,11 @@ const PrivacyPolicy: FC<Props> = ({categories, breadCrumbs, contents, setting}) 
             margin: matches ? '48px auto 48px' : '48px 16px',
           }}
         >
-          <Grid container spacing={5}>
-            <Grid item sm={12} md={8}>
-              <Box>
+          <Grid css={{gridTemplateColumns: matches ? undefined : '1fr'}}>
+            <div>
+              <div>
                 <BreadCrumbs breadCrumbs={breadCrumbs} />
-              </Box>
+              </div>
               <Typography
                 variant="h1"
                 sx={{
@@ -202,9 +145,21 @@ const PrivacyPolicy: FC<Props> = ({categories, breadCrumbs, contents, setting}) 
               >
                 プライバシーポリシー
               </Typography>
-              <Box>{contents !== null ? documentToReactComponents(contents, options) : null}</Box>
-            </Grid>
-            <Grid item xs={12} sm={12} md={4}>
+              {contents && (
+                <Toc>
+                  <TableOfContents contents={contents} />
+                </Toc>
+              )}
+              {contents && (
+                <BlogContent
+                  contents={contents}
+                  defaultThumbnailUrl={setting.defaultThumbnailUrl}
+                  categoryLinks={categories}
+                  linksByUrl={{}}
+                />
+              )}
+            </div>
+            <div>
               <Box
                 sx={{
                   backgroundColor: theme.palette.secondary.main,
@@ -222,7 +177,7 @@ const PrivacyPolicy: FC<Props> = ({categories, breadCrumbs, contents, setting}) 
               >
                 <PrivacyPolicyLink />
               </Box>
-            </Grid>
+            </div>
           </Grid>
         </Box>
       </main>
